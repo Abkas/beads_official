@@ -1,0 +1,120 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+node_modules/
+
+dist-ssr
+dist/
+dist-ssr/
+
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+
+.DS_Store
+*.suo
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+.next/
+.vercel/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sw?
+
+# Misc
+*.log
+*.tmp
+*.bak
+*.orig
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Test
+jest.config.js
+jest.setup.js
+test/
+__tests__/
+__mocks__/
+
+# TypeScript
+*.tsbuildinfo
+
+# Dependency directories
+.yarn/
+.pnp/
+.pnp.js
+
+# Mac system files
+.AppleDouble
+.LSOverride
+
+# Windows system files
+ehthumbs.db
+Icon?
+
+# VS Code settings
+.history/
+
+# SASS
+.sass-cache/
+
+# Parcel
+.cache/
+
+# Storybook
+storybook-static/
+
+# Others
+*.sublime-workspace
+*.sublime-project
+.eslintcache
+
+# Tailwind
+.tailwind/
+
+# Prettier
+.prettier*
+
+# Local env
+.local/
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
