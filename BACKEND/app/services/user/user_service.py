@@ -1,9 +1,8 @@
 
-
-from core.database import db
-from core.security import hash_password, verify_password, create_access_token
+from app.core.database import client
+from app.core.security import hash_password, verify_password, create_access_token
 from bson.objectid import ObjectId
-
+db = client['beads_db']  # Use your DB name here
 def register(user_data):
     user_data['password'] = hash_password(user_data['password'])
     result = db['users'].insert_one(user_data)

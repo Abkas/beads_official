@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.product.category_schemas import CategoryCreate, CategoryUpdate, CategoryResponse, CategoryListItem, CategoryToggleActive
-from ecom_backend_framework.app.services.product.category_service import CategoryService
+from app.services.product.category_service import get_all_categories, get_category_by_id , create_category, update_category, toggle_category_active
 from app.core.security import get_admin_user
 
 
@@ -14,13 +14,13 @@ router = APIRouter(
 
 @router.get('/', response_model=list[CategoryListItem])
 async def get_all_categories():
-    result = await CategoryService.get_all_categories()
+    result = await get_all_categories()
     return result
 
 
 @router.get('/{category_id}', response_model=CategoryResponse)
 async def get_category_by_id(category_id: str):
-    result = await CategoryService.get_category_by_id(category_id)
+    result = await get_category_by_id(category_id)
     return result
 
 
@@ -31,7 +31,7 @@ async def create_category(
     category: CategoryCreate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await CategoryService.create_category(category)
+    result = await create_category(category)
     return result
 
 
@@ -41,7 +41,7 @@ async def update_category(
     category_update: CategoryUpdate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await CategoryService.update_category(category_id, category_update)
+    result = await update_category(category_id, category_update)
     return result
 
 
@@ -50,7 +50,7 @@ async def toggle_category_active(
     category_id: str,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await CategoryService.toggle_category_active(category_id)
+    result = await toggle_category_active(category_id)
     return result
 
 
@@ -59,5 +59,5 @@ async def delete_category(
     category_id: str,
     admin_user: dict = Depends(get_admin_user)
 ):
-    await CategoryService.delete_category(category_id)
+    await delete_category(category_id)
     return None

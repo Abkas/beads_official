@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.product.review_schemas import ReviewCreate, ReviewUpdate, ReviewResponse, ReviewListItem, ReviewApprovalUpdate, ReviewHelpfulUpdate
-from ecom_backend_framework.app.services.product.review_service import get_review_by_id, mark_review_helpful, create_review, delete_review, update_review, update_review_approval, get_product_reviews
+from app.services.product.review_service import get_review_by_id, mark_review_helpful, create_review, delete_review, update_review, update_review_approval, get_product_reviews
 from app.core.security import get_current_user, get_admin_user
 
 

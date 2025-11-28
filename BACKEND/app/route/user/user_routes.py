@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.user.user_schema import UserCreate, UserLogin, UserResponse, UserUpdate
-from ecom_backend_framework.app.services.user.user_service import register,login,get_user_by_id,update_user, delete_user
+from app.services.user.user_service import register,login,get_user_by_id,update_user, delete_user
 from app.core.security import get_current_user  # For authenticatio
 
 router = APIRouter(

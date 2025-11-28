@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.product.order_schemas import OrderCreate, OrderItemSchema, OrderListItem, OrderPaymentUpdate, OrderResponse, OrderStatusUpdate
-from ecom_backend_framework.app.services.product.order_service import get_order_by_id,cancel_order,create_order,update_order_status,get_all_orders,get_user_orders
+from app.services.product.order_service import get_order_by_id,cancel_order,create_order,update_order_status,get_all_orders,get_user_orders
 from app.core.security import get_current_user, get_admin_user
 
 

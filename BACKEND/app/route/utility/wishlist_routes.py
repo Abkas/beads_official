@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.utility.wishlist_schemas import WishlistItemAdd, WishlistItemRemove, WishlistItemResponse, WishlistItemUpdate, WishlistMoveToCart, WishlistResponse
-from ecom_backend_framework.app.services.utility.wishlist_service import add_item,update_item,delete_item,get_wishlist
+from app.services.utility.wishlist_service import add_item,update_item,delete_item,get_wishlist
 from app.core.security import get_current_user  # For authentication
 
 router = APIRouter(

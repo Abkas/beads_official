@@ -1,7 +1,7 @@
 
-from core.database import db
+from app.core.database import client
 from bson.objectid import ObjectId
-
+db = client['beads_db']  # Use your DB name here
 def get_address(user_id):
     addresses = list(db['addressses'].find({'user_id':user_id}))
     for addr in addresses:

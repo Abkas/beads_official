@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.user.address_schemas import AddressCreate, AddressResponse, AddressUpdate 
-from ecom_backend_framework.app.services.user.address_service import add_address, get_address, update_address, delete_address, set_default_address
+from app.services.user.address_service import add_address, get_address, update_address, delete_address, set_default_address
 from app.core.security import get_current_user  # For authentication
 
 router = APIRouter(

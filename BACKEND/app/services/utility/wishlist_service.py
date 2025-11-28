@@ -1,4 +1,4 @@
-from core.database import db
+from app.core.database import client
 from bson.objectid import ObjectId
 from datetime import datetime
 
@@ -57,4 +57,6 @@ def update_item(user_id, product_id, wishlist_update):
 def delete_item(user_id, product_id):
 	db["wishlists"].update_one({"user_id": user_id}, {"$pull": {"items": {"product_id": product_id}}})
 	return
+
+db = client['beads_db']  # Use your DB name here
 

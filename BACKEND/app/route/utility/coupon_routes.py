@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.utility.coupon_schemas import CouponCreate, CouponListItem, CouponResponse, CouponUpdate, CouponValidate, CouponValidateResponse
-from ecom_backend_framework.app.services.utility.coupon_service import create_coupon,get_coupon_by_id,apply_coupon_to_cart,delete_coupon,toggle_coupon_activity,update_coupon,get_all_coupons,validate_coupon,get_active_coupons.core.security import get_current_user, get_admin_user
+from app.services.utility.coupon_service import create_coupon,get_coupon_by_id,apply_coupon_to_cart,delete_coupon,toggle_coupon_activity,update_coupon,get_all_coupons,validate_coupon,get_active_coupons
 from app.core.security import get_current_user, get_admin_user
 
 router = APIRouter(

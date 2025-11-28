@@ -1,4 +1,4 @@
-from core.database import db
+from app.core.database import client
 from bson.objectid import ObjectId
 
 def create_order(user_id, order_data):
@@ -55,3 +55,4 @@ def update_payment_status(order_id, payment_status):
 	if result.modified_count:
 		return db["orders"].find_one({"_id": ObjectId(order_id)})
 	return None
+db = client['beads_db']  # Use your DB name here

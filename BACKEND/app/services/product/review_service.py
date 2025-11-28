@@ -1,4 +1,4 @@
-from core.database import db
+from app.core.database import client
 from bson.objectid import ObjectId
 
 def create_review(product_id, user_id, review_data):
@@ -56,3 +56,4 @@ def get_review_by_id(review_id):
 	if review:
 		review["_id"] = str(review["_id"])
 	return review
+db = client['beads_db']  # Use your DB name here

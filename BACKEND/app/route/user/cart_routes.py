@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.user.cart_schemas import CartItemResponse, CartItemRemove, CartItemAdd, CartItemUpdate, CartResponse
-from ecom_backend_framework.app.services.user.cart_service import clear_cart , get_cart , add_to_cart , update_cart ,remove_from_cart
+from app.services.user.cart_service import clear_cart , get_cart , add_to_cart , update_cart ,remove_from_cart
 from app.core.security import get_current_user  # For authentication
 
 router = APIRouter(

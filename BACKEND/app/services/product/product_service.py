@@ -1,4 +1,4 @@
-from core.database import db
+from app.core.database import client
 from bson.objectid import ObjectId
 
 def get_all_products(category=None, search=None, min_price=None, max_price=None, is_available=True, skip=0, limit=50):
@@ -73,6 +73,10 @@ def change_availability(product_id, is_available):
 def delete_product(product_id):
     result = db["products"].delete_one({"_id": ObjectId(product_id)})
     return result.deleted_count > 0
+
+
+
+db = client['beads_db']  # Use your DB name here
 
 
 

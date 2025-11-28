@@ -1,6 +1,6 @@
-from core.database import db
+from app.core.database import client
 from bson.objectid import ObjectId
-
+db = client['beads_db']  # Use your DB name here
 def get_cart(user_id):
     cart = db['carts'].find_one({'user_id': user_id})
     if cart:

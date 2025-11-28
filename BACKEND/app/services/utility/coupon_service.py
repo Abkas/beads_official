@@ -1,8 +1,8 @@
 
-from core.database import db
+from app.core.database import client
 from bson.objectid import ObjectId
 import datetime
-
+db = client['beads_db']  # Use your DB name here
 def create_coupon(coupon_data):
 	result = db["coupons"].insert_one(coupon_data.dict())
 	coupon = coupon_data.dict()

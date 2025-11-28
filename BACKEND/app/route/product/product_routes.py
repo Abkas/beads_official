@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional
 from app.schemas.product.product_schemas import (CreateProduct, ProductDetailUpdate, ProductPriceUpdate, ProductStockUpdate, ChangeAvailabilityProduct, ProductResponse)
-from ecom_backend_framework.app.services.product.product_service import change_availability,get_product_by_id, create_product, delete_product, update_product , update_product_price ,update_product_stock ,get_all_products
+from app.services.product.product_service import change_availability,get_product_by_id, create_product, delete_product, update_product , update_product_price ,update_product_stock ,get_all_products
 from app.core.security import get_admin_user
 
 router = APIRouter(
