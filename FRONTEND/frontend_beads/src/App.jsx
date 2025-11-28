@@ -1,11 +1,20 @@
+import {Route, Routes ,Navigate} from "react-router-dom"
+
+import HomePage from "./pages/main_pages/HomePage";
+import CartPage from './pages/main_pages/CartPage';
 
 function App() {
-
   return (
     <>
-    <h1 className="text-3xl">HELLO WORLD</h1>
+      <Routes>
+          <Route path="/" element={<HomePage />} />
+
+
+
+
+      </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
