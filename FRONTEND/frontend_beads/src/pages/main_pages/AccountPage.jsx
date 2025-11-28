@@ -1,7 +1,11 @@
 
 import { useState } from "react";
+import ProfileInfo from "../../components/profile/ProfileInfo";
+import OrderHistory from "../../components/profile/OrderHistory";
+import AddressManager from "../../components/profile/AddressManager";
+import PaymentOptions from "../../components/profile/PaymentOptions";
 
-const AccountPage = ({ onNavigate }) => {
+const AccountPage = () => {
   const [activeTab, setActiveTab] = useState("profile");
 
   const tabs = [
@@ -58,161 +62,11 @@ const AccountPage = ({ onNavigate }) => {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
-            {activeTab === "profile" && (
-              <div
-                className="p-8 rounded-lg"
-                style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}
-              >
-                <h2
-                  className="text-2xl font-serif font-bold mb-8"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  Profile Information
-                </h2>
-                <div className="space-y-6">
-                  <div>
-                    <label
-                      className="block text-sm font-semibold mb-2"
-                      style={{ color: "var(--foreground)" }}
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue="Sarah Johnson"
-                      className="w-full px-4 py-3 rounded-lg border-2 transition-all focus:outline-none focus:ring-2"
-                      style={{
-                        borderColor: "var(--border)",
-                        backgroundColor: "var(--background)",
-                        color: "var(--foreground)",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      className="block text-sm font-semibold mb-2"
-                      style={{ color: "var(--foreground)" }}
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      defaultValue="sarah@example.com"
-                      className="w-full px-4 py-3 rounded-lg border-2 transition-all focus:outline-none"
-                      style={{
-                        borderColor: "var(--border)",
-                        backgroundColor: "var(--background)",
-                        color: "var(--foreground)",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      className="block text-sm font-semibold mb-2"
-                      style={{ color: "var(--foreground)" }}
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      defaultValue="+1 (555) 123-4567"
-                      className="w-full px-4 py-3 rounded-lg border-2 transition-all focus:outline-none"
-                      style={{
-                        borderColor: "var(--border)",
-                        backgroundColor: "var(--background)",
-                        color: "var(--foreground)",
-                      }}
-                    />
-                  </div>
-                  <button
-                    className="px-8 py-3 rounded-lg font-semibold transition-all hover:opacity-90 text-white"
-                    style={{ backgroundColor: "var(--primary)" }}
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "orders" && (
-              <div
-                className="p-8 rounded-lg"
-                style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}
-              >
-                <h2
-                  className="text-2xl font-serif font-bold mb-8"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  Order History
-                </h2>
-                <div className="text-center py-12">
-                  <div className="text-5xl mb-4">📭</div>
-                  <p style={{ color: "var(--text-muted)" }} className="mb-6">
-                    No orders yet. Start your collection today!
-                  </p>
-                  <button
-                    onClick={() => onNavigate("shop")}
-                    className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: "var(--accent)" }}
-                  >
-                    Explore Collection
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "addresses" && (
-              <div
-                className="p-8 rounded-lg"
-                style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}
-              >
-                <h2
-                  className="text-2xl font-serif font-bold mb-8"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  Shipping Addresses
-                </h2>
-                <div className="text-center py-12">
-                  <div className="text-5xl mb-4">📍</div>
-                  <p style={{ color: "var(--text-muted)" }} className="mb-6">
-                    No addresses saved yet. Add one during checkout or here.
-                  </p>
-                  <button
-                    className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: "var(--primary)" }}
-                  >
-                    Add Address
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "payment" && (
-              <div
-                className="p-8 rounded-lg"
-                style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}
-              >
-                <h2
-                  className="text-2xl font-serif font-bold mb-8"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  Payment Methods
-                </h2>
-                <div className="text-center py-12">
-                  <div className="text-5xl mb-4">💳</div>
-                  <p style={{ color: "var(--text-muted)" }} className="mb-6">
-                    No payment methods saved yet. Add one for faster checkout.
-                  </p>
-                  <button
-                    className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: "var(--accent)" }}
-                  >
-                    Add Payment Method
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="lg:col-span-3 p-8 rounded-lg" style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}>
+            {activeTab === "profile" && <ProfileInfo />}
+            {activeTab === "orders" && <OrderHistory />}
+            {activeTab === "addresses" && <AddressManager />}
+            {activeTab === "payment" && <PaymentOptions />}
           </div>
         </div>
       </div>
