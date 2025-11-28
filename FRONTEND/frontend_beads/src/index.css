@@ -1,1 +1,83 @@
 @import "tailwindcss";
+
+/* ---------- LIGHT THEME VARIABLES ---------- */
+:root {
+  --background: #faf8f6;
+  --foreground: #2a2620;
+  --card-bg: #ffffff;
+  --card-foreground: #2a2620;
+  --popover: #ffffff;
+  --popover-foreground: #2a2620;
+  --primary: #c9a87a;
+  --primary-foreground: #ffffff;
+  --secondary: #e8dcc8;
+  --secondary-foreground: #2a2620;
+  --muted: #f0ece3;
+  --muted-foreground: #8b8276;
+  --accent: #d4a574;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e8dcc8;
+  --input: #f9f7f4;
+  --ring: #c9a87a;
+  --chart-1: #c9a87a;
+  --chart-2: #d4a574;
+  --chart-3: #e8dcc8;
+  --chart-4: #f0ece3;
+  --chart-5: #dcc6ae;
+  --radius: 0.625rem;
+  --text-muted: #8b8276;
+  --accent-light: #f5ede2;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* ---------- DARK THEME VARIABLES ---------- */
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card-bg: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+/* ---------- BASE STYLES ---------- */
+/* Use Tailwind classes in your JSX files for styling. Remove unsupported @apply and @theme rules. */
+
+html {
+  scroll-behavior: smooth;
+}
