@@ -3,17 +3,22 @@ from app.core.database import client
 from app.core.security import hash_password, verify_password, create_access_token
 from bson.objectid import ObjectId
 db = client['beads_db']  # Use your DB name here
+
 def register(user_data):
-    user_data['password'] = hash_password(user_data['password'])
-    result = db['users'].insert_one(user_data)
+    # Convert Pydantic model to dict and hash password
+    user_dict = user_data.dict()
+    user_dict['password'] = hash_password(user_data.password)
+    result = db['users'].insert_one(user_dict)
     return str(result.inserted_id)
 
 def login(user_data):
-    user = db['users'].find_one[{'email'}:user_data['email']]
-    if user and verify_password(user_data['password'], user['password']):
+    email = user_data.email if hasattr(user_data, 'email') else user_data['email']
+    password = user_data.password if hasattr(user_data, 'password') else user_data['password']
+    user = db['users'].find_one({'email': email})
+    if user and verify_password(password, user['password']):
         token_data = {"user_id": str(user["_id"]), "email": user["email"]}
         access_token = create_access_token(token_data)
-        return{'access_token': access_token, 'user': token_data}
+        return {'access_token': access_token, 'user': token_data}
     return None
 
 def get_user_by_id(user_id):

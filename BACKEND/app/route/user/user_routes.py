@@ -9,19 +9,18 @@ router = APIRouter(
 )
 
 @router.post("/register")
-async def register_user(user_credentials: UserCreate):
-    result = await register(user_credentials)
+def register_user(user_credentials: UserCreate):
+    result = register(user_credentials)
     return result
 
 @router.post("/login")
-async def login_user(user_credentials: UserLogin):
-    result = await login(user_credentials)
+def login_user(user_credentials: UserLogin):
+    result = login(user_credentials)
     return result
 
 @router.post('/logout')
-async def logout_user():
+async def logout_user(current_user: dict = Depends(get_current_user)):
     return {"message": "Logged out successfully"}
-
 
 # Profile Management Routes
 
