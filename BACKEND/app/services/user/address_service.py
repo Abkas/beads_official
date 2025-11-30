@@ -2,16 +2,21 @@
 from app.core.database import client
 from bson.objectid import ObjectId
 db = client['beads_db']  # Use your DB name here
+
+
 def get_address(user_id):
-    addresses = list(db['addressses'].find({'user_id':user_id}))
+    addresses = list(db['addresses'].find({'user_id': user_id}))    
     for addr in addresses:
         addr['_id'] = str(addr['_id'])
     return addresses
 
 def add_address(user_id, address_data):
-    address_data['user_id'] = user_id
-    result = db['addresses'].insert_one(address_data)
-    return str(result.inserted_id)
+    address_dict = address_data.dict()
+    address_dict['user_id'] = user_id
+    result = db['addresses'].insert_one(address_dict)
+    address = db['addresses'].find_one({'_id': result.inserted_id})
+    address['_id'] = str(address['_id'])  
+    return address
 
 def update_address(address_id, user_id, update_data):
     result = db["addresses"].update_one(

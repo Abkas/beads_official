@@ -25,14 +25,14 @@ async def update_user_address(
     address_update: AddressUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    return update_address(address_id, address_update)
+    return update_address(address_id, current_user['user_id'], address_update)
 
 @router.delete('/addresses/{address_id}')
 async def delete_user_address(
     address_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    return delete_address(address_id)
+    return delete_address(address_id, current_user['user_id'])
 
 @router.put('/addresses/{address_id}/default')
 async def set_default_user_address(
