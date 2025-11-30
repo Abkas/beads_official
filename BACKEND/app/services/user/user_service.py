@@ -28,7 +28,11 @@ def login(user_data):
     password = user_data.password if hasattr(user_data, 'password') else user_data['password']
     user = db['users'].find_one({'email': email})
     if user and verify_password(password, user['password']):
-        token_data = {"user_id": str(user["_id"]), "email": user["email"]}
+        token_data = {
+            "user_id": str(user["_id"]),
+            "email": user["email"],
+            "is_admin": user.get("is_admin", False)
+        }
         access_token = create_access_token(token_data)
         return {'access_token': access_token, 'user': token_data}
     return None
