@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional , List
 from datetime import datetime
-from ecom_backend_framework.app.models.user.user_address_model import Address
-from ecom_backend_framework.app.models.user.user_cart_model import CartItem
+from .user_address_model import Address
+from .user_cart_model import CartItem
 
 class User(BaseModel):
     id: Optional[str] =Field(default = None , alias= '_id')

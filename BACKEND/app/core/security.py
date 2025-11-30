@@ -3,12 +3,12 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Query
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
 
 load_dotenv()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = HTTPBearer()
 
 #HASH PASSOWRD
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -42,25 +42,29 @@ def decode_access_token(token: str):
 
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme)):
+    token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return email
+        user_id = payload.get("user_id")
+        email = payload.get("email")
+        if user_id is None or email is None:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        return {"user_id": user_id, "email": email}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 # Admin user dependency
-def get_admin_user(token: str = Depends(oauth2_scheme)):
+def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme)):
+    token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
+        user_id = payload.get("user_id")
+        email = payload.get("email")
         is_admin = payload.get("is_admin", False)
-        if email is None or not is_admin:
+        if user_id is None or email is None or not is_admin:
             raise HTTPException(status_code=403, detail="Admin privileges required")
-        return {"user_id": email, "is_admin": True}
+        return {"user_id": user_id, "email": email, "is_admin": True}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     

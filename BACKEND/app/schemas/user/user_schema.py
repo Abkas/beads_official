@@ -9,25 +9,34 @@ class UserCreate(BaseModel):
     firstname :str
     lastname:str
     phone:Optional[str]
+    created_at: Optional[datetime]
 
 class UserLogin(BaseModel):
     email:EmailStr
     password:str
 
 class UserResponse(BaseModel):
-    id: str
+    id: Optional[str]
     username: str
     email: EmailStr
     firstname: str
     lastname: str
 
-    phone: Optional[str]
-    profile_image:Optional[str]
+    phone: Optional[str] = None
+    profile_image: Optional[str] = None
+    addresses: Optional[list] = None
 
-    is_verified:Optional[str]
-    is_admin:Optional[str]
+    Cart: Optional[list] = None
 
-    created_at : datetime
+    order_history: Optional[list] = None
+    wishlist: Optional[list] = None
+
+    is_verified: bool = False
+    is_active: bool = True
+    is_admin: bool = False
+    
+    created_at: datetime
+    last_login: Optional[datetime] = None
 
 class UserUpdate(BaseModel):
     username: Optional[str]
