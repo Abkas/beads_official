@@ -1,24 +1,45 @@
 
 from app.core.database import client
 from bson.objectid import ObjectId
-import datetime
+from datetime import datetime
+from bson.errors import InvalidId
+
 db = client['beads_db']  # Use your DB name here
+
+
 def create_coupon(coupon_data):
 	result = db["coupons"].insert_one(coupon_data.dict())
-	coupon = coupon_data.dict()
-	coupon["_id"] = str(result.inserted_id)
-	return coupon
+	now = datetime.utcnow()
+	coupon_dict = coupon_data.dict()
+	coupon_dict["used_count"] = 0
+	coupon_dict["created_at"] = now
+	result = db["coupons"].insert_one(coupon_dict)
+	coupon_dict["_id"] = str(result.inserted_id)
+	return coupon_dict
 
 def get_coupon_by_id(coupon_id):
-	coupon = db["coupons"].find_one({"code": coupon_id})
+	coupon = None
+	try:
+		coupon = db["coupons"].find_one({"_id": ObjectId(coupon_id)})
+	except (InvalidId, TypeError):
+		# Not a valid ObjectId, try by code
+		coupon = db["coupons"].find_one({"code": coupon_id})
 	if coupon:
 		coupon["_id"] = str(coupon["_id"])
+		if "used_count" not in coupon:
+			coupon["used_count"] = 0
+		if "created_at" not in coupon:
+			coupon["created_at"] = coupon.get("valid_from", datetime.utcnow())
 	return coupon
 
 def get_all_coupons(skip=0, limit=50):
 	coupons = list(db["coupons"].find().skip(skip).limit(limit))
 	for coupon in coupons:
 		coupon["_id"] = str(coupon["_id"])
+		if "used_count" not in coupon:
+			coupon["used_count"] = 0
+		if "created_at" not in coupon:
+			coupon["created_at"] = coupon.get("valid_from", datetime.utcnow())
 	return coupons
 
 def update_coupon(coupon_id, update_data):
@@ -27,13 +48,29 @@ def update_coupon(coupon_id, update_data):
 		{"$set": update_data.dict(exclude_unset=True)}
 	)
 	if result.modified_count:
-		return get_coupon_by_id(coupon_id)
+		coupon = get_coupon_by_id(coupon_id)
+		if coupon:
+			if "used_count" not in coupon:
+				coupon["used_count"] = 0
+			if "created_at" not in coupon:
+				coupon["created_at"] = coupon.get("valid_from", datetime.utcnow())
+		return coupon
 	return None
 
+
+# Patched version: supports ObjectId and code lookup
 def get_coupon_by_id(coupon_id):
-	coupon = db["coupons"].find_one({"_id": ObjectId(coupon_id)})
+	coupon = None
+	try:
+		coupon = db["coupons"].find_one({"_id": ObjectId(coupon_id)})
+	except (InvalidId, TypeError):
+		coupon = db["coupons"].find_one({"code": coupon_id})
 	if coupon:
 		coupon["_id"] = str(coupon["_id"])
+		if "used_count" not in coupon:
+			coupon["used_count"] = 0
+		if "created_at" not in coupon:
+			coupon["created_at"] = coupon.get("valid_from", datetime.utcnow())
 	return coupon
 
 def delete_coupon(coupon_id):
@@ -70,7 +107,7 @@ def toggle_coupon_activity(coupon_id):
 
 def validate_coupon(code, cart_total, user_id=None):
 	coupon = get_coupon_by_id(code)
-	now = datetime.datetime.utcnow()
+	now = datetime.utcnow()
 	if not coupon:
 		return {
 			"is_valid": False,

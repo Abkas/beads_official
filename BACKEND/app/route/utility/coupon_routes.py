@@ -12,63 +12,65 @@ router = APIRouter(
 # Admin Routes - Coupon Management
 
 @router.post('/', response_model=CouponResponse)
-async def create_coupon(
+def create_coupon_route(
     coupon: CouponCreate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await create_coupon(coupon, admin_user['user_id'])
-    return result
+    if not admin_user or not admin_user.get('is_admin', False):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    result = create_coupon(coupon)
+    return CouponResponse(**result)
 
 
 @router.get('/', response_model=list[CouponListItem])
-async def get_all_coupons(admin_user: dict = Depends(get_admin_user)):
-    result = await get_all_coupons()
-    return result
+def get_all_coupons_route(admin_user: dict = Depends(get_admin_user)):
+    result = get_all_coupons()
+    return [CouponListItem(**item) for item in result]
 
 
 @router.get('/{coupon_id}', response_model=CouponResponse)
-async def get_coupon_by_id(
+def get_coupon_by_id_route(
     coupon_id: str,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await get_coupon_by_id(coupon_id)
-    return result
+    result = get_coupon_by_id(coupon_id)
+    return CouponResponse(**result)
 
 
 @router.put('/{coupon_id}', response_model=CouponResponse)
-async def update_coupon(
+def update_coupon_route(
     coupon_id: str,
     coupon_update: CouponUpdate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await update_coupon(coupon_id, coupon_update)
-    return result
+    result = update_coupon(coupon_id, coupon_update)
+    return CouponResponse(**result)
 
 
 @router.delete('/{coupon_id}')
-async def delete_coupon(
+def delete_coupon_route(
     coupon_id: str,
     admin_user: dict = Depends(get_admin_user)
 ):
-    await delete_coupon(coupon_id)
+    delete_coupon(coupon_id)
     return None
 
 
 @router.patch('/{coupon_id}/toggle', response_model=CouponResponse)
-async def toggle_coupon_activity_route(
+def toggle_coupon_activity_route(
     coupon_id: str,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await toggle_coupon_activity(coupon_id)
+    result = toggle_coupon_activity(coupon_id)
     if not result:
         raise HTTPException(status_code=404, detail="Coupon not found or not updated")
-    return result
+    return CouponResponse(**result)
 
 
 # User Routes - Apply Coupons
 
 @router.post('/validate', response_model=CouponValidateResponse)
-async def validate_coupon(
+def validate_coupon_route(
     validation_data: CouponValidate,
     current_user: dict = Depends(get_current_user)
 ):
@@ -77,10 +79,10 @@ async def validate_coupon(
         validation_data.cart_total,
         current_user['user_id']
     )
-    return result
+    return CouponValidateResponse(**result)
 
 
 @router.get('/active', response_model=list[CouponListItem])
-async def get_active_coupons():
-    result = await get_active_coupons()
-    return result
+def get_active_coupons_route(admin_user: dict = Depends(get_admin_user)):
+    result = get_active_coupons()
+    return [CouponListItem(**item) for item in result]
