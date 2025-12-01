@@ -3,10 +3,36 @@ from bson.objectid import ObjectId
 db = client['beads_db']  # Use your DB name here
 def get_cart(user_id):
     cart = db['carts'].find_one({'user_id': user_id})
-    if cart:
-        cart['_id'] = str(cart['_id'])
-        cart["total_price"] = calculate_cart_total(cart)
-    return cart
+    if not cart:
+        return {
+            "items": [],
+            "total_items": 0,
+            "total_price": 0.0
+        }
+    cart_items = []
+    total_items = 0
+    total_price = 0.0
+    for item in cart.get('items', []):
+        # Fetch product details (name, price) from products collection
+        product = db['products'].find_one({'_id': ObjectId(item['product_id'])})
+        product_name = product['name'] if product else "Unknown"
+        price = product['price'] if product else 0.0
+        quantity = item.get('quantity', 1)
+        subtotal = price * quantity
+        cart_items.append({
+            "product_id": item['product_id'],
+            "product_name": product_name,
+            "quantity": quantity,
+            "price": price,
+            "subtotal": subtotal
+        })
+        total_items += quantity
+        total_price += subtotal
+    return {
+        "items": cart_items,
+        "total_items": total_items,
+        "total_price": total_price
+    }
 
 def add_to_cart(user_id , cart_item):
     product_id = cart_item.product_id
@@ -33,8 +59,19 @@ def add_to_cart(user_id , cart_item):
 
 def update_cart(user_id, cart_update):
 
-    items = [{"product_id": item.product_id, "quantity": item.quantity} for item in cart_update.items]
-    db["carts"].update_one({"user_id": user_id}, {"$set": {"items": items}})
+    # Update a single item in the cart
+    cart = db["carts"].find_one({"user_id": user_id})
+    if not cart:
+        return get_cart(user_id)
+    updated = False
+    for item in cart["items"]:
+        if item["product_id"] == cart_update.product_id:
+            item["quantity"] = cart_update.quantity
+            updated = True
+            break
+    if not updated:
+        cart["items"].append({"product_id": cart_update.product_id, "quantity": cart_update.quantity})
+    db["carts"].update_one({"_id": cart["_id"]}, {"$set": {"items": cart["items"]}})
     return get_cart(user_id)
 
 def remove_from_cart(user_id, product_id):
@@ -62,6 +99,6 @@ def calculate_cart_total(cart):
 
 def validate_stock(product_id, quantity):
     product = db["products"].find_one({"_id": ObjectId(product_id)})
-    if not product or product["stock"] < quantity:
+    if not product or product.get("stock_quantity", 0) < quantity:
         return False
     return True

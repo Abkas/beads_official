@@ -9,37 +9,37 @@ router = APIRouter(
 )
 
 @router.get("/cart", response_model=CartResponse)
-async def get_user_cart(current_user: dict = Depends(get_current_user)):
-    result = await get_cart(current_user['user_id'])
+def get_user_cart(current_user: dict = Depends(get_current_user)):
+    result =  get_cart(current_user['user_id'])
     return result 
 
 @router.post("/cart", response_model=CartResponse, status_code=status.HTTP_201_CREATED)
-async def add_item_to_cart(
+def add_item_to_cart(
     cart_item: CartItemAdd,
     current_user: dict = Depends(get_current_user),
 ):
-    result = await add_to_cart(current_user['user_id'], cart_item)
+    result =  add_to_cart(current_user['user_id'], cart_item)
     return result
 
 @router.put("/cart", response_model=CartResponse)
-async def update_cart_item(
+def update_cart_item(
     cart_update: CartItemUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    result = await update_cart(current_user['user_id'], cart_update)
+    result =  update_cart(current_user['user_id'], cart_update)
     return result
 
 @router.delete("/cart/{product_id}")
-async def remove_from_cart(
+def remove_from_cart_route(
     product_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    await remove_from_cart(current_user['user_id'],product_id)
-    return None
+    result = remove_from_cart(current_user['user_id'], product_id)
+    return result
 
 @router.delete("/cart")
-async def clear_cart(
-    current_user : dict = Depends(get_current_user)
+def clear_cart_route(
+    current_user: dict = Depends(get_current_user)
 ):
-    await clear_cart(current_user)
+    clear_cart(current_user['user_id'])
     return None
