@@ -11,61 +11,61 @@ router = APIRouter(
 # User Routes
 
 @router.post('/products/{product_id}', response_model=ReviewResponse)
-async def create_review(
+def create_review_route(
     product_id: str,
     review: ReviewCreate,
     current_user: dict = Depends(get_current_user)
 ):
-    result = await create_review(product_id, current_user['user_id'], review)
+    result = create_review(product_id, current_user['user_id'], review)
     return result
 
 
 @router.get('/products/{product_id}', response_model=list[ReviewListItem])
-async def get_product_reviews(
+def get_product_reviews_route(
     product_id: str,
     skip: int = 0,
     limit: int = 20
 ):
-    result = await get_product_reviews(product_id, skip, limit)
+    result = get_product_reviews(product_id, skip, limit)
     return result
 
 
 @router.put('/{review_id}', response_model=ReviewResponse)
-async def update_review(
+def update_review_route(
     review_id: str,
     review_update: ReviewUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    result = await update_review(review_id, current_user['user_id'], review_update)
+    result = update_review(review_id, current_user['user_id'], review_update)
     return result
 
 
 @router.delete('/{review_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete_review(
+def delete_review_route(
     review_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    await delete_review(review_id, current_user['user_id'])
+    delete_review(review_id, current_user['user_id'])
     return None
 
 
 @router.post('/{review_id}/helpful', response_model=ReviewResponse)
-async def mark_review_helpful(
+def mark_review_helpful_route(
     review_id: str,
     helpful_data: ReviewHelpfulUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    result = await mark_review_helpful(review_id, current_user['user_id'], helpful_data.action)
+    result = mark_review_helpful(review_id, current_user['user_id'], helpful_data.action)
     return result
 
 
 # Admin Routes
 
 @router.patch('/{review_id}/approval', response_model=ReviewResponse)
-async def update_review_approval(
+async def update_review_approval_route(
     review_id: str,
     approval: ReviewApprovalUpdate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await update_review_approval(review_id, approval.is_approved)
+    result = update_review_approval(review_id, approval.is_approved)
     return result
