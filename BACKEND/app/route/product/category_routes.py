@@ -35,7 +35,9 @@ def create_category_route(
     category: CategoryCreate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = create_category(category)
+    category_data = category.dict()
+    category_data['created_by'] = admin_user['user_id']
+    result = create_category(CategoryCreate(**category_data))
     return result
 
 

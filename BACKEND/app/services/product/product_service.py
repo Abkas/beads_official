@@ -1,6 +1,7 @@
 from app.core.database import client
 from bson.objectid import ObjectId
 from datetime import datetime
+from app.services.product.category_service import collection as category_collection
 
 def get_all_products(category=None, search=None, min_price=None, max_price=None, is_available=True, skip=0, limit=50):
     query = {}
@@ -72,6 +73,11 @@ def create_product(product_data):
     product_dict["is_active"] = product_dict.get("is_active", True)
     product_dict["ratings"] = product_dict.get("ratings", 0.0)
     product_dict["review_count"] = product_dict.get("review_count", 0)
+
+    # Validate category name exists
+    category_doc = category_collection.find_one({"name": product_dict["category"]})
+    if not category_doc:
+        raise ValueError("Category does not exist.")
     result = db["products"].insert_one(product_dict)
     return get_product_by_id(str(result.inserted_id))
 
