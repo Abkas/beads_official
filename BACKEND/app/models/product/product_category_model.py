@@ -12,6 +12,6 @@ class Category(BaseModel):
     parent_category: Optional[str] = Field(default = None, descriptoin ="For Subcategories")
 
     image_url: Optional[str] = Field(default = None)
-    is_active: bool = Field(default = True)
+    is_active: bool = Field(default=True, description="Whether the category is active")
 
     created_at : datetime = Field(Default_factory = datetime.now)
