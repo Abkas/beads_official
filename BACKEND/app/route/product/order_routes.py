@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.product.order_schemas import OrderCreate, OrderItemSchema, OrderListItem, OrderPaymentUpdate, OrderResponse, OrderStatusUpdate
-from app.services.product.order_service import get_order_by_id,cancel_order,create_order,update_order_status,get_all_orders,get_user_orders
+from app.services.product.order_service import get_order_by_id as get_order_by_id_service, cancel_order as cancel_order_service, create_order, update_order_status, get_all_orders as get_all_orders_service, get_user_orders,update_payment_status as update_payment_status_service
 from app.core.security import get_current_user, get_admin_user
 
 
@@ -13,34 +13,34 @@ router = APIRouter(
 # User Routes - Order Management
 
 @router.post('/', response_model=OrderResponse)
-async def place_order(
+def place_order(
     order_data: OrderCreate,
     current_user: dict = Depends(get_current_user)
 ):
-    result = await create_order(current_user['user_id'], order_data)
+    result =  create_order(current_user['user_id'], order_data)
     return result
 
 @router.get('/me', response_model=list[OrderListItem])
-async def get_my_orders(current_user: dict = Depends(get_current_user)):
-    result = await get_user_orders(current_user['user_id'])
+def get_my_orders(current_user: dict = Depends(get_current_user)):
+    result =  get_user_orders(current_user['user_id'])
     return result
 
 
 @router.get('/{order_id}', response_model=OrderResponse)
-async def get_order_by_id(
+def get_order_by_id_route(
     order_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    result = await get_order_by_id(order_id, current_user['user_id'])
+    result = get_order_by_id_service(order_id, current_user['user_id'])
     return result
 
 
 @router.post('/{order_id}/cancel', response_model=OrderResponse)
-async def cancel_order(
+def cancel_order_route(
     order_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    result = await cancel_order(order_id, current_user['user_id'])
+    result = cancel_order_service(order_id, current_user['user_id'])
     return result
 
 
@@ -52,28 +52,41 @@ async def get_all_orders(
     status_filter: str = None,
     limit: int = 50
 ):
-    result = await get_all_orders(status_filter, limit)
+    result = get_all_orders_service(status_filter, limit)
     return result
 
 
 @router.patch('/{order_id}/status', response_model=OrderResponse)
-async def update_order_status(
+async def update_order_status_route(
     order_id: str,
     status_update: OrderStatusUpdate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await update_order_status(order_id, status_update.status)
-    return result
+    order = update_order_status(order_id, status_update.status)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    # Ensure response has 'id' as string, not ObjectId
+    if isinstance(order, dict):
+        order["id"] = str(order.get("_id"))
+        order.pop("_id", None)
+    return order
 
 
 @router.patch('/{order_id}/payment', response_model=OrderResponse)
-async def update_payment_status(
+def update_payment_status_route(
     order_id: str,
     payment_update: OrderPaymentUpdate,
     admin_user: dict = Depends(get_admin_user)
 ):
-    result = await update_payment_status(order_id, payment_update.payment_status)
-    return result
+    
+    order = update_payment_status_service(order_id, payment_update.payment_status)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    # Ensure response has 'id' as string, not ObjectId
+    if isinstance(order, dict):
+        order["id"] = str(order.get("_id"))
+        order.pop("_id", None)
+    return order
 
 
 

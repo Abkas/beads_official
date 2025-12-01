@@ -23,9 +23,16 @@ def update_address(address_id, user_id, update_data):
         {"_id": ObjectId(address_id), "user_id": user_id},
         {"$set": update_data.dict(exclude_unset=True)}
     )
-    if result.modified_count:
-        return get_address_by_id(address_id, user_id)
-    return None
+    # If setting is_default to True, unset previous default
+    if update_data.get("is_default"):
+        db["addresses"].update_many({"user_id": user_id, "is_default": True}, {"$set": {"is_default": False}})
+        # Ensure only the updated address is set as default
+        update_data["is_default"] = True
+    elif "is_default" in update_data and not update_data["is_default"]:
+        # If explicitly unsetting default, just update this address
+        update_data["is_default"] = False
+    result = db["addresses"].update_one({"_id": ObjectId(address_id), "user_id": user_id}, {"$set": update_data.dict(exclude_unset=True)})
+    return result.modified_count > 0
 
 def get_address_by_id(address_id, user_id):
     address = db["addresses"].find_one({"_id": ObjectId(address_id), "user_id": user_id})

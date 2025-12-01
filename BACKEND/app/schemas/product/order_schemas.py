@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
+from typing import Literal
+
 class OrderItemSchema(BaseModel):
     product_id: str 
     product_name: str 
@@ -29,19 +31,14 @@ class OrderResponse(BaseModel):
     
     created_at: datetime = Field(description="When order was placed")
     
+
 class OrderStatusUpdate(BaseModel):
-    status: str = Field(
-        description="New order status",
-        json_schema_extra={
-            "enum": ["pending", "processing", "shipped", "delivered", "cancelled"]
-        }
+    status: Literal["pending", "processing", "shipped", "delivered", "cancelled"] = Field(
+        description="New order status"
     )
 class OrderPaymentUpdate(BaseModel):
-    payment_status: str = Field(
-        description="New payment status",
-        json_schema_extra={
-            "enum": ["unpaid", "paid", "failed", "refunded"]
-        }
+    payment_status: Literal["unpaid", "paid", "failed", "refunded"] = Field(
+        description="New payment status"
     )
 class OrderListItem(BaseModel):
     id: str

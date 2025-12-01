@@ -7,7 +7,6 @@ class AddressCreate(BaseModel):
     phone_number: str
 
     address_type: str = Field(default="Home", description="Home, Work, Other")
-    is_default: bool = Field(default=False, description="Set as default address for checkout")
 
     country: str = Field(default="Nepal")
     province: str
