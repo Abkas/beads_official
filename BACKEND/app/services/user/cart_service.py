@@ -34,25 +34,34 @@ def get_cart(user_id):
         "total_price": total_price
     }
 
-def add_to_cart(user_id , cart_item):
+def add_to_cart(user_id, cart_item):
     product_id = cart_item.product_id
     quantity = cart_item.quantity
     if not validate_stock(product_id, quantity):
         raise Exception("Not enough stock")
-    
-    cart = db['carts'].find_one({'user_id' : user_id})
+    # Fetch product details for name
+    product = None
+    try:
+        product = db['products'].find_one({'_id': ObjectId(product_id)})
+    except Exception:
+        product = db['products'].find_one({'_id': product_id})
+    product_name = product['name'] if product else "Unknown"
+    cart = db['carts'].find_one({'user_id': user_id})
     if cart:
+        found = False
         for item in cart['items']:
             if item['product_id'] == product_id:
-                item['quantity'] == quantity
+                item['quantity'] += quantity  # Update quantity
+                item['product_name'] = product_name  # Ensure name is updated
+                found = True
                 break
-        else:
-            cart['items'].append({'product_id': product_id, 'quantity': quantity})
-        db["carts"].update_one({"_id": cart["_id"]}, {"$set": {"items": cart["items"]}})
+        if not found:
+            cart['items'].append({'product_id': product_id, 'quantity': quantity, 'product_name': product_name})
+        db['carts'].update_one({'_id': cart['_id']}, {'$set': {'items': cart['items']}})
     else:
         db['carts'].insert_one({
             'user_id': user_id,
-            'items': [{'product_id': product_id, 'quantity': quantity}]
+            'items': [{'product_id': product_id, 'quantity': quantity, 'product_name': product_name}]
         })
 
     return get_cart(user_id)

@@ -1,6 +1,7 @@
 from app.core.database import client
 from bson.objectid import ObjectId
 from datetime import datetime
+from app.services.utility.coupon_service import validate_coupon
 
 
 def create_order(user_id, order_data):
@@ -21,7 +22,23 @@ def create_order(user_id, order_data):
 		order_dict["subtotal"] = order_dict.get("subtotal", 0.0)
 
 	order_dict["shipping_cost"] = order_dict.get("shipping_cost", 0.0)
-	order_dict["total"] = order_dict["subtotal"] + order_dict["shipping_cost"]
+
+	# Coupon application (right after subtotal and shipping_cost are set, before total)
+	coupon_code = order_dict.get("coupon_code")
+	discount_amount = 0.0
+	if coupon_code:
+		coupon_result = validate_coupon(coupon_code, order_dict["subtotal"], user_id)
+		if coupon_result.get("is_valid"):
+			discount_amount = coupon_result.get("discount_amount", 0.0)
+			order_dict["coupon_code"] = coupon_code
+			order_dict["discount_amount"] = discount_amount
+		else:
+			order_dict["coupon_code"] = None
+			order_dict["discount_amount"] = 0.0
+	else:
+		order_dict["discount_amount"] = 0.0
+	# Apply discount to total
+	order_dict["total"] = order_dict["subtotal"] + order_dict["shipping_cost"] - order_dict["discount_amount"]
 
 	# If no shipping_address provided, use user's default address
 	shipping_address = order_dict.get("shipping_address")
@@ -65,6 +82,8 @@ def get_order_by_id(order_id, user_id):
 		"items": order.get("items", []),
 		"subtotal": order.get("subtotal", 0.0),
 		"shipping_cost": order.get("shipping_cost", 0.0),
+		"discount_amount": order.get("discount_amount", 0.0),
+		"coupon_code": order.get("coupon_code", None),
 		"total": order.get("total", 0.0),
 		"shipping_address": order.get("shipping_address", {}),
 		"status": order.get("status", "pending"),

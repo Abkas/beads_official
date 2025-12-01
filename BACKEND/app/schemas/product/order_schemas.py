@@ -17,18 +17,15 @@ class OrderCreate(BaseModel):
 class OrderResponse(BaseModel):
     id: str 
     user_id: str
-
     items: List[OrderItemSchema] = Field(description="List of products ordered")
-    
     subtotal: float = Field(ge=0)
     shipping_cost: float = Field(ge=0)
+    discount_amount: float = Field(ge=0, default=0.0, description="Discount applied from coupon")
+    coupon_code: str = Field(default=None, description="Coupon code if any")
     total: float = Field(ge=0)
-
     shipping_address: dict 
-    
     status: str = Field(description="Order status: pending, processing, shipped, delivered, cancelled")
     payment_status: str = Field(description="Payment status: unpaid, paid, failed, refunded")
-    
     created_at: datetime = Field(description="When order was placed")
     
 
