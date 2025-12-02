@@ -9,6 +9,9 @@ import WishlistPage from "./pages/main_pages/WishlistPage";
 import AccountPage from "./pages/main_pages/AccountPage";
 import ContactUsPage from "./pages/main_pages/ContactUsPage";
 
+import LoginPage from "./pages/sub_pages/LoginPage";
+import SignUpPage from "./pages/sub_pages/SignUpPage";
+
 
 function App() {
   return (
@@ -21,6 +24,9 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/account" element={<AccountPage />} />
+
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
 
 
 

@@ -50,49 +50,60 @@ const Navbar = ({ cart = [], wishlist = [] }) => {
             ))}
           </div>
 
-          {/* Icons */}
+          {/* Icons or Login Button */}
           <div className="flex items-center gap-4 md:gap-6">
-            <button
-              onClick={() => navigate("/wishlist")}
-              className="relative text-lg transition-all hover:scale-110"
-              title="Wishlist"
-            >
-              ♡
-              {wishlist.length > 0 && (
-                <span
-                  className="absolute -top-2 -right-2 text-xs rounded-full w-5 h-5 flex items-center justify-center text-white font-bold"
-                  style={{ backgroundColor: "var(--accent)" }}
+            {localStorage.getItem("access_token") ? (
+              <>
+                <button
+                  onClick={() => navigate("/wishlist")}
+                  className="relative text-lg transition-all hover:scale-110"
+                  title="Wishlist"
                 >
-                  {wishlist.length}
-                </span>
-              )}
-            </button>
+                  ♡
+                  {wishlist.length > 0 && (
+                    <span
+                      className="absolute -top-2 -right-2 text-xs rounded-full w-5 h-5 flex items-center justify-center text-white font-bold"
+                      style={{ backgroundColor: "var(--accent)" }}
+                    >
+                      {wishlist.length}
+                    </span>
+                  )}
+                </button>
 
-            <button
-              onClick={() => navigate("/cart")}
-              className="relative text-lg transition-all hover:scale-110"
-              title="Shopping Cart"
-            >
-              🛒
-              {cart.length > 0 && (
-                <span
-                  className="absolute -top-2 -right-2 text-xs rounded-full w-5 h-5 flex items-center justify-center text-white font-bold"
-                  style={{ backgroundColor: "var(--accent)" }}
+                <button
+                  onClick={() => navigate("/cart")}
+                  className="relative text-lg transition-all hover:scale-110"
+                  title="Shopping Cart"
                 >
-                  {cart.length}
-                </span>
-              )}
-            </button>
+                  🛒
+                  {cart.length > 0 && (
+                    <span
+                      className="absolute -top-2 -right-2 text-xs rounded-full w-5 h-5 flex items-center justify-center text-white font-bold"
+                      style={{ backgroundColor: "var(--accent)" }}
+                    >
+                      {cart.length}
+                    </span>
+                  )}
+                </button>
 
-            {/* Account */}
-            <button
-              onClick={() => navigate("/account")}
-              className="hidden md:flex items-center justify-center w-8 h-8 rounded-full text-white font-serif font-bold transition-all hover:scale-110"
-              style={{ backgroundColor: "var(--primary)" }}
-              title="Account"
-            >
-              👤
-            </button>
+                {/* Account */}
+                <button
+                  onClick={() => navigate("/account")}
+                  className="hidden md:flex items-center justify-center w-8 h-8 rounded-full text-white font-serif font-bold transition-all hover:scale-110"
+                  style={{ backgroundColor: "var(--primary)" }}
+                  title="Account"
+                >
+                  👤
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="px-6 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-colors font-medium"
+              >
+                Login
+              </button>
+            )}
 
             {/* Mobile Toggle */}
             <button
