@@ -1,12 +1,21 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileInfo from "../../components/profile/ProfileInfo";
 import OrderHistory from "../../components/profile/OrderHistory";
 import AddressManager from "../../components/profile/AddressManager";
 import PaymentOptions from "../../components/profile/PaymentOptions";
+import { logout } from "../../api/UserApi";
 
 const AccountPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
+
+  // Redirect to login if not logged in
+  useEffect(() => {
+    if (!localStorage.getItem("access_token")) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   const tabs = [
     { id: "profile", label: "Profile Info", icon: "👤" },
@@ -14,6 +23,11 @@ const AccountPage = () => {
     { id: "addresses", label: "Addresses", icon: "📍" },
     { id: "payment", label: "Payment Methods", icon: "💳" },
   ];
+
+  const handleLogout = () => {
+    logout();
+    setTimeout(() => navigate("/"), 0);
+  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
@@ -35,6 +49,13 @@ const AccountPage = () => {
                 Manage your profile, orders, and preferences
               </p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="ml-auto px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-colors font-medium"
+              style={{ marginLeft: "auto" }}
+            >
+              Logout
+            </button>
           </div>
         </div>
 

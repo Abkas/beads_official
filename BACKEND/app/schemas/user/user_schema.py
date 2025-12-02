@@ -9,8 +9,6 @@ class UserCreate(BaseModel):
     firstname :str
     lastname:str
     phone:Optional[str]
-    created_at: Optional[datetime]
-
 class UserLogin(BaseModel):
     email:EmailStr
     password:str

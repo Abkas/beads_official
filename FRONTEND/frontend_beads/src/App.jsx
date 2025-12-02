@@ -13,10 +13,14 @@ import LoginPage from "./pages/sub_pages/LoginPage";
 import SignUpPage from "./pages/sub_pages/SignUpPage";
 
 
+import { useLocation } from "react-router-dom";
+
 function App() {
+  const location = useLocation();
+  const hideNavFooter = ["/login", "/signup"].includes(location.pathname);
   return (
     <>
-    <Navbar/>
+      {!hideNavFooter && <Navbar />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
@@ -24,14 +28,10 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/account" element={<AccountPage />} />
-
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-
-
-
       </Routes>
-      <Footer/>
+      {!hideNavFooter && <Footer />}
     </>
   );
 }

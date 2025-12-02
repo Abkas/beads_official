@@ -16,6 +16,8 @@ def register(user_data):
     # Convert Pydantic model to dict and hash password
     user_dict = user_data.dict()
     user_dict['password'] = hash_password(user_data.password)
+    # Always set created_at to now, ignore frontend value
+    user_dict['created_at'] = datetime.now()
     user_obj = User(**user_dict)
     user_doc = user_obj.dict(by_alias=True)
     if user_doc.get('_id') is None:

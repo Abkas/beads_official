@@ -1,16 +1,17 @@
 import { axiosInstance } from "../lib/axios";
 
 // Signup: POST /signup
-export async function signup({ username, email, password ,firstname,lastname,phoneNumber}) {
+export async function signup({ username, email, password ,firstname,lastname, phone }) {
   try {
-    const response = await axiosInstance.post("users/register", {
+    const payload = {
       username,
       email,
       password,
       firstname,
       lastname,
-      phoneNumber
-    });
+      phone: phone && typeof phone === "string" && phone.trim() !== "" ? phone : null
+    };
+    const response = await axiosInstance.post("users/register", payload);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.detail || error.message || "Signup failed");
@@ -24,8 +25,12 @@ export async function login({ email, password }) {
       email,
       password
     });
-    localStorage.setItem("access_token", response.data.access_token);
-    return response.data;
+    if (response.data && response.data.access_token) {
+      localStorage.setItem("access_token", response.data.access_token);
+      return response.data;
+    } else {
+      throw new Error("Login failed: No access token received");
+    }
   } catch (error) {
     throw new Error(error.response?.data?.detail || error.message || "Login failed");
   }

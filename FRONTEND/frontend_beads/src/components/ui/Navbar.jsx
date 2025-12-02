@@ -1,17 +1,24 @@
-"use client";
-
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Navbar = ({ cart = [], wishlist = [] }) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("access_token"));
 
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Shop", path: "/shop" },
     { label: "Contact", path: "/contact" },
   ];
+
+  // Update login state on every render and after login/logout
+  useEffect(() => {
+    const checkLogin = () => setIsLoggedIn(!!localStorage.getItem("access_token"));
+    checkLogin();
+    window.addEventListener("storage", checkLogin);
+    return () => window.removeEventListener("storage", checkLogin);
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-yellow-100">
@@ -52,7 +59,7 @@ const Navbar = ({ cart = [], wishlist = [] }) => {
 
           {/* Icons or Login Button */}
           <div className="flex items-center gap-4 md:gap-6">
-            {localStorage.getItem("access_token") ? (
+            {isLoggedIn ? (
               <>
                 <button
                   onClick={() => navigate("/wishlist")}
