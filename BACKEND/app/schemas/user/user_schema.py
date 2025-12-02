@@ -3,12 +3,12 @@ from typing import Optional , List
 from datetime import datetime
 
 class UserCreate(BaseModel):
-    username:str
-    email:EmailStr
-    password:str
-    firstname :str
-    lastname:str
-    phone:Optional[str]
+    username: str
+    email: EmailStr
+    password: str = Field(min_length=6)
+    firstname: str
+    lastname: str
+    phone: Optional[str]
 class UserLogin(BaseModel):
     email:EmailStr
     password:str

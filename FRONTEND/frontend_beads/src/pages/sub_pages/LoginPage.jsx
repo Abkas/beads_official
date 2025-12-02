@@ -1,27 +1,27 @@
 import React, { useState } from "react";
 import { login } from "../../api/UserApi";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
       const data = await login({ email, password });
       if (data.access_token) {
+        toast.success("Logged in successfully!");
         navigate("/");
       } else {
-        setError("Login failed. Please check your credentials.");
+        toast.error("Invalid credentials. Please try again.");
       }
     } catch (err) {
-      setError(err.message || "Network error. Please try again.");
+      toast.error(err.message || "Network error. Please try again.");
     }
     setLoading(false);
   };
@@ -59,8 +59,6 @@ export default function LoginPage() {
               Remember me
             </label>
           </div>
-
-          {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
 
           <button
             type="submit"

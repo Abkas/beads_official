@@ -5,6 +5,7 @@ import OrderHistory from "../../components/profile/OrderHistory";
 import AddressManager from "../../components/profile/AddressManager";
 import PaymentOptions from "../../components/profile/PaymentOptions";
 import { logout } from "../../api/UserApi";
+import { toast } from "react-hot-toast";
 
 const AccountPage = () => {
   const navigate = useNavigate();
@@ -25,8 +26,13 @@ const AccountPage = () => {
   ];
 
   const handleLogout = () => {
-    logout();
-    setTimeout(() => navigate("/"), 0);
+    try {
+      logout();
+      toast.success("Logged out successfully!");
+      setTimeout(() => navigate("/"), 0);
+    } catch (err) {
+      toast.error(err.message || "Logout failed. Please try again.");
+    }
   };
 
   return (

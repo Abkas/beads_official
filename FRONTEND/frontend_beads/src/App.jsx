@@ -1,6 +1,7 @@
 import {Route, Routes ,Navigate} from "react-router-dom"
 import Navbar from "../src/components/ui/Navbar"
 import Footer from "../src/components/ui/Footer"
+import { Toaster } from "react-hot-toast";
 
 import HomePage from "./pages/main_pages/HomePage";
 import CartPage from './pages/main_pages/CartPage';
@@ -20,6 +21,7 @@ function App() {
   const hideNavFooter = ["/login", "/signup"].includes(location.pathname);
   return (
     <>
+      <Toaster position="top-right" />
       {!hideNavFooter && <Navbar />}
       <Routes>
         <Route path="/" element={<HomePage />} />

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signup } from "../../api/UserApi";
+import { toast } from "react-hot-toast";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -10,23 +11,27 @@ export default function SignupPage() {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     if (!username || !email || !password || !firstname || !lastname) {
-      setError("All fields except phone are required.");
+      toast.error("All fields except phone are required.");
+      setLoading(false);
+      return;
+    }
+    if (password.length < 5) {
+      toast.error("Password must be at least 5 characters.");
       setLoading(false);
       return;
     }
     try {
       await signup({ username, email, password, firstname, lastname, phone });
+      toast.success("Signup completed!");
       navigate("/login");
     } catch (err) {
-      setError(err.message || "Signup failed. Please check your details.");
+      toast.error(err.message || "Signup failed. Please check your details.");
     }
     setLoading(false);
   };
@@ -95,8 +100,6 @@ export default function SignupPage() {
               className="w-full px-4 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-700"
             />
           </div>
-
-          {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
 
           <button
             type="submit"
