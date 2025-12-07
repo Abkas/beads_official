@@ -1,41 +1,41 @@
+import '../../../admin.css';
 import { Link, useParams } from "react-router-dom";
 import NavItems from "../ui/NavItems";
 
-const OrderDetails = () => {
+const CustomerProfile = () => {
+  // Removed useLocation, handled in NavItems
   const { id } = useParams();
 
-  // TODO: call GET /api/orders/:id
-  const order = {
-    id: id || "ORD-001",
-    date: "January 15, 2024",
-    customer: {
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+1 (555) 123-4567"
-    },
-    shipping: {
-      address: "123 Main Street",
+  // TODO: call GET /api/customers/:id
+  const customer = {
+    id: id || "1",
+    name: "John Doe",
+    email: "john@example.com",
+    phone: "+1 (555) 123-4567",
+    joinDate: "January 15, 2024",
+    status: "Active",
+    verified: true,
+    address: {
+      street: "123 Main Street",
       city: "New York",
       state: "NY",
       zip: "10001",
-      country: "United States",
-      method: "Express Shipping",
-      status: "Shipped",
-      tracking: "1Z999AA10123456784"
+      country: "United States"
     },
-    payment: {
-      method: "Visa ending in 4242",
-      status: "Paid",
-      subtotal: "$279.00",
-      shipping: "$20.00",
-      tax: "$22.32",
-      total: "$321.32"
+    stats: {
+      totalOrders: 12,
+      totalSpent: "$2,450.00",
+      avgOrderValue: "$204.17"
     },
-    items: [
-      { id: 1, name: "Wireless Bluetooth Headphones", sku: "WBH-001", price: "$99.00", quantity: 2, total: "$198.00", image: "/placeholder.svg" },
-      { id: 2, name: "USB-C Hub 7-in-1", sku: "UCH-001", price: "$79.00", quantity: 1, total: "$79.00", image: "/placeholder.svg" },
+    orders: [
+      { id: "ORD-012", date: "Jan 15, 2024", total: "$299.00", status: "Delivered", items: 3 },
+      { id: "ORD-008", date: "Jan 10, 2024", total: "$549.00", status: "Shipped", items: 2 },
+      { id: "ORD-005", date: "Dec 28, 2023", total: "$129.00", status: "Delivered", items: 1 },
+      { id: "ORD-002", date: "Dec 15, 2023", total: "$899.00", status: "Delivered", items: 5 },
     ]
   };
+
+  // Removed navItems, now using shared NavItems
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -57,15 +57,12 @@ const OrderDetails = () => {
         {/* Top Navbar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-6">
           <div className="flex items-center gap-4">
-            <Link to="/orders" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            <Link to="/admin/customers" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
-            <h1 className="text-lg font-semibold text-foreground">Order {order.id}</h1>
-            <span className="inline-flex items-center rounded-full bg-info/10 px-2.5 py-0.5 text-xs font-medium text-info">
-              {order.shipping.status}
-            </span>
+            <h1 className="text-lg font-semibold text-foreground">Customer Profile</h1>
           </div>
           <div className="flex items-center gap-4">
             <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
@@ -86,156 +83,142 @@ const OrderDetails = () => {
           </div>
         </header>
 
-        {/* Order Details Content */}
+        {/* Profile Content */}
         <main className="p-6 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Order Items */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
-                <div className="p-6 border-b border-border">
-                  <h2 className="text-lg font-semibold text-foreground">Order Items</h2>
+            {/* Left Column */}
+            <div className="space-y-6">
+              {/* Customer Info */}
+              <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-xl font-bold text-primary">JD</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">{customer.name}</h2>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        customer.status === "Active" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {customer.status}
+                      </span>
+                      {customer.verified && (
+                        <span className="inline-flex items-center gap-1 text-xs text-primary">
+                          <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Verified
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/50">
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Product</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">SKU</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Qty</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {order.items.map((item) => (
-                        <tr key={item.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3">
-                              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                              </div>
-                              <span className="text-sm font-medium text-foreground">{item.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{item.sku}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{item.price}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{item.quantity}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground text-right">{item.total}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="p-6 border-t border-border bg-muted/30">
-                  <div className="flex flex-col gap-2 max-w-xs ml-auto">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span className="text-foreground">{order.payment.subtotal}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Shipping</span>
-                      <span className="text-foreground">{order.payment.shipping}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Tax</span>
-                      <span className="text-foreground">{order.payment.tax}</span>
-                    </div>
-                    <div className="flex justify-between text-sm font-semibold pt-2 border-t border-border">
-                      <span className="text-foreground">Total</span>
-                      <span className="text-foreground">{order.payment.total}</span>
-                    </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-foreground">{customer.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span className="text-foreground">{customer.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-muted-foreground">Customer since {customer.joinDate}</span>
                   </div>
                 </div>
               </div>
 
+              {/* Address */}
+              <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Shipping Address</h3>
+                <p className="text-sm text-muted-foreground">
+                  {customer.address.street}<br />
+                  {customer.address.city}, {customer.address.state} {customer.address.zip}<br />
+                  {customer.address.country}
+                </p>
+              </div>
+
               {/* Actions */}
-              <div className="flex flex-wrap gap-3">
-                <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                  </svg>
-                  Print Invoice
-                </button>
-                <button className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+              <div className="flex flex-col gap-2">
+                <button className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-2">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                   Send Email
                 </button>
-                <button className="inline-flex items-center gap-2 rounded-lg border border-destructive/50 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
-                  </svg>
-                  Refund Order
+                <button className="w-full rounded-lg border border-destructive/50 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+                  Deactivate Account
                 </button>
               </div>
             </div>
 
-            {/* Sidebar Info */}
-            <div className="space-y-6">
-              {/* Customer */}
-              <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Customer</h2>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-sm font-medium text-primary">JD</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{order.customer.name}</p>
-                      <p className="text-xs text-muted-foreground">{order.customer.email}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{order.customer.phone}</p>
-                  <Link to="/customers/1" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                    View Profile →
-                  </Link>
+            {/* Right Column */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+                  <p className="text-sm text-muted-foreground">Total Orders</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{customer.stats.totalOrders}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+                  <p className="text-sm text-muted-foreground">Total Spent</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{customer.stats.totalSpent}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+                  <p className="text-sm text-muted-foreground">Avg. Order Value</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{customer.stats.avgOrderValue}</p>
                 </div>
               </div>
 
-              {/* Shipping */}
-              <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Shipping</h2>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{order.shipping.method}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {order.shipping.address}<br />
-                      {order.shipping.city}, {order.shipping.state} {order.shipping.zip}<br />
-                      {order.shipping.country}
-                    </p>
-                  </div>
-                  <div className="pt-3 border-t border-border">
-                    <p className="text-xs text-muted-foreground">Tracking Number</p>
-                    <p className="text-sm font-medium text-primary">{order.shipping.tracking}</p>
-                  </div>
-                  <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option>Processing</option>
-                    <option selected>Shipped</option>
-                    <option>Delivered</option>
-                    <option>Cancelled</option>
-                  </select>
+              {/* Order History */}
+              <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
+                <div className="p-6 border-b border-border">
+                  <h3 className="text-lg font-semibold text-foreground">Order History</h3>
                 </div>
-              </div>
-
-              {/* Payment */}
-              <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Payment</h2>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
-                    <span className="inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
-                      {order.payment.status}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Method</span>
-                    <span className="text-sm text-foreground">{order.payment.method}</span>
-                  </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-border">
-                    <span className="text-sm font-medium text-foreground">Total</span>
-                    <span className="text-sm font-bold text-foreground">{order.payment.total}</span>
-                  </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Order ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Items</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {customer.orders.map((order) => (
+                        <tr key={order.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">{order.id}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{order.date}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{order.items} items</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{order.total}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              order.status === "Delivered" ? "bg-success/10 text-success" :
+                              order.status === "Shipped" ? "bg-info/10 text-info" :
+                              "bg-warning/10 text-warning"
+                            }`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <Link to={`/orders/${order.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -246,4 +229,5 @@ const OrderDetails = () => {
   );
 };
 
-export default OrderDetails;
+export default CustomerProfile;
+  

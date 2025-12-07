@@ -1,3 +1,4 @@
+import '../../../admin.css';
 import { Link, useParams } from "react-router-dom";
 import NavItems from "../ui/NavItems";
 
@@ -60,7 +61,7 @@ const OrderDetails = () => {
         {/* Top Navbar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-6">
           <div className="flex items-center gap-4">
-            <Link to="/orders" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            <Link to="/admin/orders" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -212,11 +213,14 @@ const OrderDetails = () => {
                     <p className="text-xs text-muted-foreground">Tracking Number</p>
                     <p className="text-sm font-medium text-primary">{order.shipping.tracking}</p>
                   </div>
-                  <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option>Processing</option>
-                    <option selected>Shipped</option>
-                    <option>Delivered</option>
-                    <option>Cancelled</option>
+                  <select
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    defaultValue={order.shipping.status}
+                  >
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
                   </select>
                 </div>
               </div>

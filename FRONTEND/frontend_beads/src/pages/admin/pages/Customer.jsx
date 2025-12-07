@@ -1,3 +1,4 @@
+import '../../../admin.css';
 import NavItems from "../ui/NavItems";
 import { Link } from "react-router-dom";
 
@@ -136,7 +137,7 @@ const Customers = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <Link to={`/customers/${customer.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                        <Link to={`/admin/customers/${customer.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                           View Profile
                         </Link>
                       </td>

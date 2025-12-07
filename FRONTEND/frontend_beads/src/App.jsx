@@ -12,32 +12,25 @@ import ContactUsPage from "./pages/main_pages/ContactUsPage";
 
 import LoginPage from "./pages/sub_pages/LoginPage";
 import SignUpPage from "./pages/sub_pages/SignUpPage";
+
 import AdminDashboard from "./pages/admin/pages/AdminDashboard";
 import Settings from "./pages/admin/pages/Settings";
 import Product from "./pages/admin/pages/Product";
 import Customer from "./pages/admin/pages/Customer";
+import CustomerProfile from "./pages/admin/components/CustomerProfile";
 import Orders from "./pages/admin/pages/Orders";
+
 import Payment from "./pages/admin/pages/Payment";
 import Shipping from "./pages/admin/pages/Shipping";
+import OrderDetails from "./pages/admin/components/OrderDetails";
 
 import { useLocation } from "react-router-dom";
 import ProductForm from "./pages/admin/components/ProductForm";
 
 function App() {
   const location = useLocation();
-  const hideNavFooter = [
-    "/login",
-    "/signup",
-    "/admin",
-    "/admin/settings",
-    "/admin/products",
-    "/admin/customers",
-    "/admin/orders",
-    "/admin/payments",
-    "/admin/shipping",
-    "/admin/products/edit/:id",
-    "/admin/products/add"
-  ].includes(location.pathname);
+  const hideNavFooter = location.pathname.startsWith("/admin") ||
+    ["/login", "/signup"].includes(location.pathname);
   return (
     <>
       <Toaster position="top-right" />
@@ -59,7 +52,9 @@ function App() {
         <Route path="/admin/products/add" element={<ProductForm />} />
         <Route path="/admin/products/edit/:id" element={<ProductForm />} />
         <Route path="/admin/customers" element={<Customer />} />
+        <Route path="/admin/customers/:id" element={<CustomerProfile />} />
         <Route path="/admin/orders" element={<Orders />} />
+        <Route path="/admin/orders/:id" element={<OrderDetails />} />
         <Route path="/admin/payments" element={<Payment />} />
         <Route path="/admin/shipping" element={<Shipping />} />
       </Routes>
