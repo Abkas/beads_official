@@ -21,6 +21,7 @@ import Payment from "./pages/admin/pages/Payment";
 import Shipping from "./pages/admin/pages/Shipping";
 
 import { useLocation } from "react-router-dom";
+import ProductForm from "./pages/admin/components/ProductForm";
 
 function App() {
   const location = useLocation();
@@ -33,7 +34,9 @@ function App() {
     "/admin/customers",
     "/admin/orders",
     "/admin/payments",
-    "/admin/shipping"
+    "/admin/shipping",
+    "/admin/products/edit/:id",
+    "/admin/products/add"
   ].includes(location.pathname);
   return (
     <>
@@ -53,6 +56,8 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/settings" element={<Settings />} />
         <Route path="/admin/products" element={<Product />} />
+        <Route path="/admin/products/add" element={<ProductForm />} />
+        <Route path="/admin/products/edit/:id" element={<ProductForm />} />
         <Route path="/admin/customers" element={<Customer />} />
         <Route path="/admin/orders" element={<Orders />} />
         <Route path="/admin/payments" element={<Payment />} />

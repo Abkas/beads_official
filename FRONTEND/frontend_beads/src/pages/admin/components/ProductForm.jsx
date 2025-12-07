@@ -1,45 +1,32 @@
 import { Link, useParams } from "react-router-dom";
 import NavItems from "../ui/NavItems";
-import { useEffect, useState } from "react";
 
 const ProductForm = () => {
+  // Removed useLocation, handled in NavItems
   const { id } = useParams();
   const isEdit = Boolean(id);
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(isEdit);
+  // TODO: call GET /api/products/:id for edit mode
+  const product = isEdit ? {
+    title: "Wireless Bluetooth Headphones",
+    description: "High-quality wireless headphones with active noise cancellation and 30-hour battery life.",
+    category: "Electronics",
+    price: "99.00",
+    comparePrice: "129.00",
+    cost: "45.00",
+    stock: 45,
+    sku: "WBH-001",
+    barcode: "123456789012",
+    status: "active"
+  } : null;
 
-  useEffect(() => {
-    if (!isEdit) return;
+  // Removed navItems, now using shared NavItems
 
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(`/api/products/${id}`);
-        const data = await res.json();
-        setProduct(data);
-      } catch (err) {
-        console.error("Failed to load product", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [id, isEdit]);
-
-
+  // TODO: call POST /api/products or PUT /api/products/:id
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted");
   };
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center text-foreground">
-        Loading product...
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -58,21 +45,40 @@ const ProductForm = () => {
 
       {/* Main Content */}
       <div className="flex-1 ml-64">
+        {/* Top Navbar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-6">
           <div className="flex items-center gap-4">
-            <Link to="/admin/products" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            <Link to="/products" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
             <h1 className="text-lg font-semibold text-foreground">{isEdit ? "Edit Product" : "Add Product"}</h1>
           </div>
+          <div className="flex items-center gap-4">
+            <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive"></span>
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-sm font-medium text-primary-foreground">AD</span>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-sm font-medium text-foreground">Admin User</p>
+                <p className="text-xs text-muted-foreground">admin@store.com</p>
+              </div>
+            </div>
+          </div>
         </header>
 
+        {/* Form Content */}
         <main className="p-6 animate-fade-in">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left side */}
+              {/* Main Form */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Basic Info */}
                 <div className="rounded-xl border border-border bg-card p-6 shadow-card">
@@ -84,17 +90,16 @@ const ProductForm = () => {
                         type="text"
                         defaultValue={product?.title || ""}
                         placeholder="Enter product title"
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">Description</label>
                       <textarea
                         rows={5}
                         defaultValue={product?.description || ""}
                         placeholder="Enter product description"
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm resize-none"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
                       />
                     </div>
                   </div>
@@ -103,7 +108,7 @@ const ProductForm = () => {
                 {/* Media */}
                 <div className="rounded-xl border border-border bg-card p-6 shadow-card">
                   <h2 className="text-lg font-semibold text-foreground mb-4">Media</h2>
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer">
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
                     <svg className="h-12 w-12 text-muted-foreground mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -118,76 +123,87 @@ const ProductForm = () => {
                   <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Price</label>
-                      <input
-                        type="text"
-                        defaultValue={product?.price}
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
-                      />
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Price</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <input
+                          type="text"
+                          defaultValue={product?.price || ""}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border border-border bg-background pl-7 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                      </div>
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Compare at Price</label>
-                      <input
-                        type="text"
-                        defaultValue={product?.comparePrice}
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
-                      />
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Compare at Price</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <input
+                          type="text"
+                          defaultValue={product?.comparePrice || ""}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border border-border bg-background pl-7 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                      </div>
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Cost per Item</label>
-                      <input
-                        type="text"
-                        defaultValue={product?.cost}
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
-                      />
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Cost per Item</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <input
+                          type="text"
+                          defaultValue={product?.cost || ""}
+                          placeholder="0.00"
+                          className="w-full rounded-lg border border-border bg-background pl-7 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Inventory */}
                 <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                  <h2 className="text-lg font-semibold mb-4">Inventory</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-4">Inventory</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">SKU</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">SKU</label>
                       <input
                         type="text"
-                        defaultValue={product?.sku}
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
+                        defaultValue={product?.sku || ""}
+                        placeholder="SKU-001"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Barcode</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Barcode</label>
                       <input
                         type="text"
-                        defaultValue={product?.barcode}
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
+                        defaultValue={product?.barcode || ""}
+                        placeholder="123456789012"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Quantity</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Quantity</label>
                       <input
                         type="number"
-                        defaultValue={product?.stock}
-                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
+                        defaultValue={product?.stock || ""}
+                        placeholder="0"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Right Sidebar */}
+              {/* Sidebar */}
               <div className="space-y-6">
                 {/* Status */}
                 <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                  <h2 className="text-lg font-semibold mb-4">Status</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-4">Status</h2>
                   <select
                     defaultValue={product?.status || "active"}
-                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="active">Active</option>
                     <option value="draft">Draft</option>
@@ -197,10 +213,10 @@ const ProductForm = () => {
 
                 {/* Category */}
                 <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                  <h2 className="text-lg font-semibold mb-4">Category</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-4">Category</h2>
                   <select
-                    defaultValue={product?.category}
-                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm"
+                    defaultValue={product?.category || ""}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Select category</option>
                     <option value="Electronics">Electronics</option>
@@ -210,18 +226,17 @@ const ProductForm = () => {
                   </select>
                 </div>
 
-                {/* Buttons */}
+                {/* Actions */}
                 <div className="flex flex-col gap-3">
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
+                    className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     {isEdit ? "Update Product" : "Create Product"}
                   </button>
-
                   <Link
-                    to="/admin/products"
-                    className="w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground text-center hover:bg-muted"
+                    to="/products"
+                    className="w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground text-center hover:bg-muted transition-colors"
                   >
                     Cancel
                   </Link>

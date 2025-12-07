@@ -87,7 +87,7 @@ const Products = () => {
               </select>
             </div>
             <Link
-              to="/products/add"
+              to="/admin/products/add"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@ const Products = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link
-                            to={`/products/edit/${product.id}`}
+                            to={`/admin/products/edit/${product.id}`}
                             className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                           >
                             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
