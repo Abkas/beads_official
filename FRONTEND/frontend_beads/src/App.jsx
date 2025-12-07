@@ -26,11 +26,20 @@ import OrderDetails from "./pages/admin/components/OrderDetails";
 
 import { useLocation } from "react-router-dom";
 import ProductForm from "./pages/admin/components/ProductForm";
+import { useEffect } from "react";
 
 function App() {
   const location = useLocation();
   const hideNavFooter = location.pathname.startsWith("/admin") ||
     ["/login", "/signup"].includes(location.pathname);
+  
+  // Conditionally load admin.css only for admin routes
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin")) {
+      import("./admin.css");
+    }
+  }, [location.pathname]);
+
   return (
     <>
       <Toaster position="top-right" />

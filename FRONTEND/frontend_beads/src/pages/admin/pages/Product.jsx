@@ -1,4 +1,3 @@
-import '../../../admin.css';
 import NavItems from "../ui/NavItems";
 import { Link } from "react-router-dom";
 
