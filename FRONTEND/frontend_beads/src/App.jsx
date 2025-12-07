@@ -12,13 +12,29 @@ import ContactUsPage from "./pages/main_pages/ContactUsPage";
 
 import LoginPage from "./pages/sub_pages/LoginPage";
 import SignUpPage from "./pages/sub_pages/SignUpPage";
-
+import AdminDashboard from "./pages/admin/pages/AdminDashboard";
+import Settings from "./pages/admin/pages/Settings";
+import Product from "./pages/admin/pages/Product";
+import Customer from "./pages/admin/pages/Customer";
+import Orders from "./pages/admin/pages/Orders";
+import Payment from "./pages/admin/pages/Payment";
+import Shipping from "./pages/admin/pages/Shipping";
 
 import { useLocation } from "react-router-dom";
 
 function App() {
   const location = useLocation();
-  const hideNavFooter = ["/login", "/signup"].includes(location.pathname);
+  const hideNavFooter = [
+    "/login",
+    "/signup",
+    "/admin",
+    "/admin/settings",
+    "/admin/products",
+    "/admin/customers",
+    "/admin/orders",
+    "/admin/payments",
+    "/admin/shipping"
+  ].includes(location.pathname);
   return (
     <>
       <Toaster position="top-right" />
@@ -32,6 +48,15 @@ function App() {
         <Route path="/account" element={<AccountPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+
+        
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/settings" element={<Settings />} />
+        <Route path="/admin/products" element={<Product />} />
+        <Route path="/admin/customers" element={<Customer />} />
+        <Route path="/admin/orders" element={<Orders />} />
+        <Route path="/admin/payments" element={<Payment />} />
+        <Route path="/admin/shipping" element={<Shipping />} />
       </Routes>
       {!hideNavFooter && <Footer />}
     </>

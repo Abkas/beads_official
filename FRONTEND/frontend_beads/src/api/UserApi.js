@@ -53,7 +53,7 @@ export async function verifyToken() {
   if (!token) return { isValid: false, error: "No token found" };
 
   try {
-    const response = await axiosInstance.get("/get-user", {
+    const response = await axiosInstance.get("/users/me", {
       headers: { Authorization: `Bearer ${token}` }
     });
     return {
