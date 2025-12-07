@@ -60,7 +60,7 @@ const ProductForm = () => {
       <div className="flex-1 ml-64">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-6">
           <div className="flex items-center gap-4">
-            <Link to="/products" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            <Link to="/admin/products" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -220,7 +220,7 @@ const ProductForm = () => {
                   </button>
 
                   <Link
-                    to="/products"
+                    to="/admin/products"
                     className="w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground text-center hover:bg-muted"
                   >
                     Cancel
