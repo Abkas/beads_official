@@ -23,7 +23,8 @@ class ProductDetailUpdate(BaseModel):
     description: Optional[str]
     category: Optional[str]
     tags: Optional[List[str]] = None   
-    image_urls: Optional[List[str]] = None 
+    image_urls: Optional[List[str]] = None
+    is_active: Optional[bool] = None 
 
 class ProductPriceUpdate(BaseModel):
     price: Optional[float]

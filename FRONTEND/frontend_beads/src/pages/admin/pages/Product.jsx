@@ -1,20 +1,28 @@
 import NavItems from "../ui/NavItems";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { getAllProducts } from "../../../api/admin/productApi";
 
 
 const Products = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // TODO: call GET /api/products
-  const products = [
-    { id: 1, name: "Wireless Bluetooth Headphones", image: "/placeholder.svg", price: "$99.00", stock: 45, category: "Electronics", status: "Active" },
-    { id: 2, name: "Smart Watch Pro Max", image: "/placeholder.svg", price: "$299.00", stock: 23, category: "Electronics", status: "Active" },
-    { id: 3, name: "Premium Laptop Stand", image: "/placeholder.svg", price: "$49.00", stock: 0, category: "Accessories", status: "Out of Stock" },
-    { id: 4, name: "USB-C Hub 7-in-1", image: "/placeholder.svg", price: "$79.00", stock: 67, category: "Accessories", status: "Active" },
-    { id: 5, name: "Mechanical Keyboard RGB", image: "/placeholder.svg", price: "$149.00", stock: 12, category: "Electronics", status: "Low Stock" },
-    { id: 6, name: "Wireless Mouse Ergonomic", image: "/placeholder.svg", price: "$59.00", stock: 89, category: "Accessories", status: "Active" },
-    { id: 7, name: "4K Webcam HD", image: "/placeholder.svg", price: "$129.00", stock: 34, category: "Electronics", status: "Active" },
-    { id: 8, name: "Monitor Light Bar", image: "/placeholder.svg", price: "$69.00", stock: 5, category: "Accessories", status: "Low Stock" },
-  ];
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllProducts({ isAvailable: null });
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -99,45 +107,62 @@ const Products = () => {
 
           {/* Products Table */}
           <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-6 py-3 text-left">
-                      <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Product</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Price</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Stock</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-muted/30 transition-colors">
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading products...</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="px-6 py-3 text-left">
+                        <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Product</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Stock</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Active</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {products.map((product) => (
+                      <tr key={product.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-6 py-4">
                         <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                            <img src={product.image_urls?.[0] || "/placeholder.svg"} alt={product.name} className="h-full w-full object-cover" />
                           </div>
                           <span className="text-sm font-medium text-foreground">{product.name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{product.price}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{product.stock}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{product.currency} {product.price}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{product.stock_quantity}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{product.category}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          product.status === "Active" ? "bg-success/10 text-success" :
-                          product.status === "Low Stock" ? "bg-warning/10 text-warning" :
-                          "bg-destructive/10 text-destructive"
+                          !product.is_available ? "bg-destructive/10 text-destructive" :
+                          product.stock_quantity === 0 ? "bg-destructive/10 text-destructive" :
+                          product.stock_quantity < 20 ? "bg-warning/10 text-warning" :
+                          "bg-success/10 text-success"
                         }`}>
-                          {product.status}
+                          {!product.is_available ? "Unavailable" :
+                           product.stock_quantity === 0 ? "Out of Stock" :
+                           product.stock_quantity < 20 ? "Low Stock" : 
+                           "In Stock"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          product.is_active ? "bg-success/10 text-success" : "bg-gray-500/10 text-gray-500"
+                        }`}>
+                          {product.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -158,10 +183,11 @@ const Products = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             {/* Pagination */}
             <div className="flex items-center justify-between border-t border-border px-6 py-4">

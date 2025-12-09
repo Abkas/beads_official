@@ -86,16 +86,23 @@ def update_product(product_id, product_update):
         {"_id": ObjectId(product_id)},
         {"$set": product_update.dict(exclude_unset=True)}
     )
-    if result.modified_count:
+    # Return product even if nothing was modified (matched_count > 0 means product exists)
+    if result.matched_count:
         return get_product_by_id(product_id)
     return None
 
 def update_product_price(product_id, price_update):
+    update_data = {"price": price_update.price}
+    if price_update.currency:
+        update_data["currency"] = price_update.currency
+    if price_update.discount_price is not None:
+        update_data["discount_price"] = price_update.discount_price
+    
     result = db["products"].update_one(
         {"_id": ObjectId(product_id)},
-        {"$set": {"price": price_update.price}}
+        {"$set": update_data}
     )
-    if result.modified_count:
+    if result.matched_count:
         return get_product_by_id(product_id)
     return None
 
@@ -104,7 +111,7 @@ def update_product_stock(product_id, stock_update):
         {"_id": ObjectId(product_id)},
         {"$set": {"stock_quantity": stock_update.stock_quantity}}
     )
-    if result.modified_count:
+    if result.matched_count:
         return get_product_by_id(product_id)
     return None
 
@@ -113,7 +120,7 @@ def change_availability(product_id, is_available):
         {"_id": ObjectId(product_id)},
         {"$set": {"is_available": is_available}}
     )
-    if result.modified_count:
+    if result.matched_count:
         return get_product_by_id(product_id)
     return None
 

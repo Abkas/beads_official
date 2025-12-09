@@ -26,7 +26,7 @@ def get_all_products(
     search: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
-    is_available: Optional[bool] = True,
+    is_available: Optional[bool] = None,
     skip: int = 0,
     limit: int = 50
 ):
