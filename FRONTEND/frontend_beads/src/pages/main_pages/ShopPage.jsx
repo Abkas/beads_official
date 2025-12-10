@@ -1,21 +1,51 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "../../components/ui/ProductCard";
+import { getAllProducts } from "../../api/admin/productApi";
 
-export default function ShopPage({ onNavigate }) {
+export default function ShopPage() {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const products = [
-    { id: 1, name: "Amethyst Dream", price: 24.99, category: "gemstone", image: "/amethyst-bracelet.jpg" },
-    { id: 2, name: "Ocean Breeze", price: 19.99, category: "gemstone", image: "/turquoise-bracelet.jpg" },
-    { id: 3, name: "Forest Serenity", price: 22.99, category: "gemstone", image: "/green-jade-bracelet.jpg" },
-    { id: 4, name: "Rose Petal", price: 21.99, category: "gemstone", image: "/rose-quartz-bracelet.jpg" },
-    { id: 5, name: "Beaded Nature", price: 18.99, category: "wood", image: "/wooden-beaded-bracelet.jpg" },
-    { id: 6, name: "Boho Vibes", price: 25.99, category: "leather", image: "/bohemian-leather-bracelet.jpg" },
-  ];
+  useEffect(() => {
+    fetchProducts();
+  }, [selectedCategory]);
 
-  const filteredProducts =
-    selectedCategory === "all" ? products : products.filter((p) => p.category === selectedCategory);
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log("Fetching products with category:", selectedCategory);
+      
+      const data = await getAllProducts({
+        category: selectedCategory === "all" ? null : selectedCategory,
+        isAvailable: true, // Only show available products in shop
+      });
+      
+      console.log("Fetched products:", data);
+      setProducts(data);
+      
+      // Extract unique categories if not already set
+      if (categories.length === 0) {
+        const uniqueCategories = [...new Set(data.map(p => p.category).filter(Boolean))];
+        console.log("Extracted categories:", uniqueCategories);
+        setCategories(uniqueCategories);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      console.error("Error details:", error.response?.data);
+      setError("Failed to load products. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProducts = products;
 
   return (
     <div className="min-h-screen bg-white">
@@ -28,20 +58,23 @@ export default function ShopPage({ onNavigate }) {
             <div className="bg-slate-50 p-6 rounded-lg">
               <h3 className="font-semibold text-slate-900 mb-4">Categories</h3>
               <div className="space-y-2">
-                {[
-                  { id: "all", label: "All Products" },
-                  { id: "gemstone", label: "Gemstone" },
-                  { id: "wood", label: "Wooden" },
-                  { id: "leather", label: "Leather" },
-                ].map((cat) => (
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className={`block w-full text-left px-3 py-2 rounded transition-colors ${
+                    selectedCategory === "all" ? "bg-slate-200 text-slate-900" : "text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  All Products
+                </button>
+                {categories.map((cat) => (
                   <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
                     className={`block w-full text-left px-3 py-2 rounded transition-colors ${
-                      selectedCategory === cat.id ? "bg-slate-200 text-slate-900" : "text-slate-600 hover:bg-slate-100"
+                      selectedCategory === cat ? "bg-slate-200 text-slate-900" : "text-slate-600 hover:bg-slate-100"
                     }`}
                   >
-                    {cat.label}
+                    {cat}
                   </button>
                 ))}
               </div>
@@ -50,17 +83,53 @@ export default function ShopPage({ onNavigate }) {
 
           {/* Products Grid */}
           <div className="lg:col-span-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onViewDetail={() => onNavigate("product-detail")}
-                  onAddToCart={() => alert("Added to cart!")}
-                  onAddToWishlist={() => alert("Added to wishlist!")}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mb-4"></div>
+                  <p className="text-slate-600">Loading products...</p>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <p className="text-red-600 mb-4">{error}</p>
+                  <button
+                    onClick={fetchProducts}
+                    className="px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <p className="text-slate-600 mb-2">No products found</p>
+                  <p className="text-sm text-slate-500">Try selecting a different category</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={{
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      discount_price: product.discount_price,
+                      category: product.category,
+                      image: product.image_urls?.[0] || "/placeholder.svg",
+                      description: product.description
+                    }}
+                    onViewDetail={() => navigate(`/product/${product.id}`)}
+                    onAddToCart={() => alert(`Added ${product.name} to cart!`)}
+                    onAddToWishlist={() => alert(`Added ${product.name} to wishlist!`)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
