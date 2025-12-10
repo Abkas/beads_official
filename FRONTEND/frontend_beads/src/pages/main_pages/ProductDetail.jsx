@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getAllProducts } from "../../api/admin/productApi";
+import { Heart, ShoppingCart, TruckIcon, ShieldCheck, ArrowLeft } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function ProductDetail() {
   const { id: productId } = useParams();
@@ -9,6 +11,7 @@ export default function ProductDetail() {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (productId) {
@@ -57,22 +60,34 @@ export default function ProductDetail() {
 
   const images = product.image_urls && product.image_urls.length > 0 ? product.image_urls : ["/placeholder.svg"];
 
+  const handleAddToCart = () => {
+    toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleAddToWishlist = () => {
+    toast.success(`${product.name} added to wishlist!`);
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <button onClick={() => navigate("/shop")} className="text-amber-700 hover:text-amber-800 mb-8 font-medium">
-          ← Back to Shop
-        </button>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Link 
+          to="/shop" 
+          className="inline-flex items-center gap-2 text-slate-600 hover:text-amber-700 mb-6 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Shop
+        </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
           {/* Image Gallery */}
-          <div>
+          <div className="space-y-4">
             {/* Main Image */}
-            <div className="bg-slate-100 rounded-lg overflow-hidden mb-4 aspect-square">
+            <div className="bg-slate-100 rounded-lg overflow-hidden aspect-square border border-slate-200">
               <img 
                 src={images[selectedImage]} 
                 alt={product.name} 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
                 onError={(e) => e.target.src = '/placeholder.svg'}
               />
             </div>
@@ -102,56 +117,91 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Details */}
-          <div>
-            <h1 className="text-4xl font-serif font-bold text-slate-900 mb-4">{product.name}</h1>
-            <span className="text-3xl font-bold text-slate-900 mb-6 block">NPR {product.price}</span>
-
-            <p className="text-slate-600 mb-8">
-              {product.description || "A beautiful handcrafted product."}
-            </p>
-
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">Quantity</label>
-                <input
-                  type="number"
-                  defaultValue="1"
-                  min="1"
-                  max={product.stock_quantity}
-                  className="w-20 px-3 py-2 border border-slate-300 rounded"
-                />
-              </div>
+          {/* Product Info */}
+          <div className="space-y-6">
+            <div>
+              <span className="inline-block px-3 py-1 text-sm font-medium bg-amber-100 text-amber-800 rounded-full mb-3 uppercase">
+                {product.category}
+              </span>
+              <h1 className="text-3xl md:text-4xl font-bold font-serif mb-2 text-slate-900">
+                {product.name}
+              </h1>
+              <p className="text-slate-600">
+                {product.description || "A beautiful handcrafted product."}
+              </p>
             </div>
 
-            <div className="space-y-3 mb-8">
+            <div className="text-3xl font-bold text-amber-700">
+              NPR {product.price}
+            </div>
+
+            {product.is_available ? (
+              <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                In Stock
+              </span>
+            ) : (
+              <span className="inline-block px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">
+                Out of Stock
+              </span>
+            )}
+
+            {/* Quantity Selector */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">
+                Quantity
+              </label>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, Math.min(product.stock_quantity, parseInt(e.target.value) || 1)))}
+                min="1"
+                max={product.stock_quantity}
+                className="w-24 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+              <span className="ml-3 text-sm text-slate-600">
+                {product.stock_quantity} available
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-wrap gap-4">
               <button 
-                onClick={() => alert("Added to cart!")}
-                className="w-full px-6 py-3 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-colors text-lg font-medium"
+                onClick={handleAddToCart}
+                disabled={!product.is_available}
+                className="flex-1 sm:flex-initial px-6 py-3 bg-amber-700 text-white rounded-lg hover:bg-amber-800 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors text-lg font-medium inline-flex items-center justify-center gap-2"
               >
+                <ShoppingCart className="h-5 w-5" />
                 Add to Cart
               </button>
               <button 
-                onClick={() => alert("Added to wishlist!")}
-                className="w-full px-6 py-3 border border-amber-700 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"
+                onClick={handleAddToWishlist}
+                className="px-6 py-3 border-2 border-amber-700 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors inline-flex items-center gap-2"
               >
-                Add to Wishlist
+                <Heart className="h-5 w-5" />
+                Save
               </button>
             </div>
 
-            <div className="border-t pt-8">
-              <h2 className="font-serif font-bold text-lg text-slate-900 mb-4">Details</h2>
-              <ul className="space-y-3 text-slate-600">
-                <li>
-                  <span className="font-medium">Category:</span> {product.category || "N/A"}
-                </li>
-                <li>
-                  <span className="font-medium">Stock:</span> {product.stock_quantity} available
-                </li>
-                <li>
-                  <span className="font-medium">Status:</span> {product.is_available ? "In Stock" : "Out of Stock"}
-                </li>
-              </ul>
+            {/* Delivery Info Card */}
+            <div className="p-6 space-y-4 bg-amber-50/50 rounded-lg border border-amber-100">
+              <div className="flex items-start gap-3">
+                <TruckIcon className="h-5 w-5 text-amber-700 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold mb-1 text-slate-900">Fast Delivery within Nepal</h3>
+                  <p className="text-sm text-slate-600">
+                    We deliver across all provinces. Estimated delivery: 2-5 business days.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="h-5 w-5 text-amber-700 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold mb-1 text-slate-900">Cash on Delivery Available</h3>
+                  <p className="text-sm text-slate-600">
+                    Pay when you receive your order. No advance payment required.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
