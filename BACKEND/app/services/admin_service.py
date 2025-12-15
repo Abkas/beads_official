@@ -8,8 +8,17 @@ def get_all_users():
     users = list(db['users'].find())
     result = []
     for user in users:
+        user_id = str(user['_id'])
+        
+        # Fetch addresses from addresses collection
+        addresses = list(db['addresses'].find({'user_id': user_id}))
+        for addr in addresses:
+            addr['id'] = str(addr['_id'])
+            del addr['_id']
+            addr.setdefault('is_default', False)
+        
         result.append({
-            'id': str(user['_id']),
+            'id': user_id,
             'username': user.get('username', ''),
             'email': user.get('email', ''),
             'firstname': user.get('firstname', ''),
@@ -22,7 +31,7 @@ def get_all_users():
             'created_at': user.get('created_at'),
             'last_login': user.get('last_login'),
             'order_history': user.get('order_history', []),
-            'addresses': user.get('addresses', [])
+            'addresses': addresses
         })
     return result
 
@@ -32,6 +41,13 @@ def get_user_by_id_admin(user_id: str):
         user = db['users'].find_one({'_id': ObjectId(user_id)})
         if not user:
             return None
+        
+        # Fetch addresses from addresses collection
+        addresses = list(db['addresses'].find({'user_id': user_id}))
+        for addr in addresses:
+            addr['id'] = str(addr['_id'])
+            del addr['_id']
+            addr.setdefault('is_default', False)
         
         return {
             'id': str(user['_id']),
@@ -47,7 +63,7 @@ def get_user_by_id_admin(user_id: str):
             'created_at': user.get('created_at'),
             'last_login': user.get('last_login'),
             'order_history': user.get('order_history', []),
-            'addresses': user.get('addresses', []),
+            'addresses': addresses,
             'Cart': user.get('Cart', []),
             'wishlist': user.get('wishlist', [])
         }

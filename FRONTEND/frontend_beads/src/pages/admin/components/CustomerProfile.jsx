@@ -189,20 +189,83 @@ const CustomerProfile = () => {
 
                 {/* Address */}
                 <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                  <h3 className="text-sm font-semibold text-foreground mb-4">Shipping Address</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-foreground">Addresses</h3>
+                    {customer.addresses && customer.addresses.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {customer.addresses.length} {customer.addresses.length === 1 ? 'address' : 'addresses'}
+                      </span>
+                    )}
+                  </div>
                   {customer.addresses && customer.addresses.length > 0 ? (
                     <div className="space-y-4">
                       {customer.addresses.map((addr, idx) => (
-                        <div key={idx} className="text-sm text-muted-foreground">
-                          <p className="font-medium text-foreground">{addr.label || `Address ${idx + 1}`}</p>
-                          <p>{addr.street || ""}</p>
-                          <p>{addr.city || ""}{addr.state ? `, ${addr.state}` : ""} {addr.zip || ""}</p>
-                          <p>{addr.country || ""}</p>
+                        <div 
+                          key={idx} 
+                          className="p-4 rounded-lg border transition-all"
+                          style={{
+                            borderColor: addr.is_default ? "var(--primary)" : "var(--border)",
+                            backgroundColor: addr.is_default ? "var(--primary-light)" : "transparent"
+                          }}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span 
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold text-white"
+                                style={{
+                                  backgroundColor: addr.address_type === 'Home' ? '#10b981' : addr.address_type === 'Work' ? '#3b82f6' : '#8b5cf6'
+                                }}
+                              >
+                                {addr.address_type === 'Home' && '🏠'}
+                                {addr.address_type === 'Work' && '💼'}
+                                {addr.address_type === 'Other' && '📍'}
+                                {addr.address_type}
+                              </span>
+                              {addr.is_default && (
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="font-semibold text-foreground text-sm">{addr.full_name}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                              </svg>
+                              {addr.phone_number}
+                            </div>
+                            <div className="flex items-start gap-2 text-xs text-muted-foreground mt-2">
+                              <svg className="w-3 h-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                              <span>
+                                {addr.tole && `${addr.tole}, `}
+                                {addr.city}, {addr.district}<br />
+                                {addr.province}, {addr.country}
+                                {addr.landmark && (
+                                  <span className="block mt-1 text-muted-foreground/80">
+                                    📍 {addr.landmark}
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No address on file</p>
+                    <div className="text-center py-6">
+                      <svg className="h-12 w-12 mx-auto text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <p className="text-sm text-muted-foreground">No address on file</p>
+                    </div>
                   )}
                 </div>
 

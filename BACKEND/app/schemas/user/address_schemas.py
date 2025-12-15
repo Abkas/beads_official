@@ -57,6 +57,7 @@ class AddressUpdate(BaseModel):
 
 
 class AddressResponse(BaseModel):
+    id: str
     full_name: str
     phone_number: str
 
@@ -73,6 +74,7 @@ class AddressResponse(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
+                "id": "507f1f77bcf86cd799439011",
                 "full_name": "John Doe",
                 "phone_number": "9841234567",
                 "address_type": "Home",
