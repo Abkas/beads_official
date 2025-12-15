@@ -13,6 +13,7 @@ from app.route.user.cart_routes import router as cart_router
 from app.route.utility.coupon_routes import router as coupon_router
 from app.route.utility.wishlist_routes import router as wishlist_router
 from app.route.upload_routes import router as upload_router
+from app.route.admin_routes import router as admin_router
 
 app = FastAPI(title='Ecom-framework')
 
@@ -26,6 +27,7 @@ app.include_router(cart_router)
 app.include_router(coupon_router)
 app.include_router(wishlist_router)
 app.include_router(upload_router)
+app.include_router(admin_router)
 
 origins = [
     "http://localhost:5173",  

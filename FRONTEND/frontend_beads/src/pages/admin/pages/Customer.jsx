@@ -1,19 +1,81 @@
 import NavItems from "../ui/NavItems";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { getAllCustomers } from "../../../api/admin/customerApi";
 
 const Customers = () => {
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  // TODO: call GET /api/customers
-  const customers = [
-    { id: 1, name: "John Doe", email: "john@example.com", phone: "+1 (555) 123-4567", joinDate: "Jan 15, 2024", orders: 12, spent: "$2,450.00", status: "Active" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "+1 (555) 234-5678", joinDate: "Jan 10, 2024", orders: 8, spent: "$1,890.00", status: "Active" },
-    { id: 3, name: "Mike Johnson", email: "mike@example.com", phone: "+1 (555) 345-6789", joinDate: "Dec 28, 2023", orders: 3, spent: "$450.00", status: "Active" },
-    { id: 4, name: "Sarah Wilson", email: "sarah@example.com", phone: "+1 (555) 456-7890", joinDate: "Dec 15, 2023", orders: 15, spent: "$4,230.00", status: "VIP" },
-    { id: 5, name: "Chris Brown", email: "chris@example.com", phone: "+1 (555) 567-8901", joinDate: "Nov 20, 2023", orders: 0, spent: "$0.00", status: "Inactive" },
-    { id: 6, name: "Emily Davis", email: "emily@example.com", phone: "+1 (555) 678-9012", joinDate: "Nov 10, 2023", orders: 22, spent: "$6,780.00", status: "VIP" },
-    { id: 7, name: "David Lee", email: "david@example.com", phone: "+1 (555) 789-0123", joinDate: "Oct 25, 2023", orders: 5, spent: "$890.00", status: "Active" },
-    { id: 8, name: "Lisa Chen", email: "lisa@example.com", phone: "+1 (555) 890-1234", joinDate: "Oct 15, 2023", orders: 9, spent: "$1,560.00", status: "Active" },
-  ];
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getAllCustomers();
+      setCustomers(data);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error fetching customers:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter customers based on search and status
+  const filteredCustomers = customers.filter(customer => {
+    const matchesSearch = 
+      (customer.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (customer.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (customer.firstname || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (customer.lastname || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = 
+      statusFilter === "all" || 
+      (statusFilter === "Active" && customer.is_active) ||
+      (statusFilter === "Inactive" && !customer.is_active) ||
+      (statusFilter === "VIP" && customer.is_admin);
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const getCustomerStatus = (customer) => {
+    if (customer.is_admin) return "VIP";
+    if (customer.is_active) return "Active";
+    return "Inactive";
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const getCustomerName = (customer) => {
+    if (customer.firstname || customer.lastname) {
+      return `${customer.firstname || ''} ${customer.lastname || ''}`.trim();
+    }
+    return customer.username || "";
+  };
+
+  const getCustomerInitials = (customer) => {
+    if (customer.firstname && customer.lastname) {
+      return `${customer.firstname[0]}${customer.lastname[0]}`.toUpperCase();
+    }
+    if (customer.username && customer.username.length >= 2) {
+      return customer.username.substring(0, 2).toUpperCase();
+    }
+    if (customer.email && customer.email.length >= 2) {
+      return customer.email.substring(0, 2).toUpperCase();
+    }
+    return "??";
+  };
 
 
   return (
@@ -68,14 +130,20 @@ const Customers = () => {
               <input
                 type="text"
                 placeholder="Search customers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-lg border border-border bg-background py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
-            <select className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-              <option>All Status</option>
-              <option>Active</option>
-              <option>VIP</option>
-              <option>Inactive</option>
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">All Status</option>
+              <option value="Active">Active</option>
+              <option value="VIP">VIP</option>
+              <option value="Inactive">Inactive</option>
             </select>
             <button className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,87 +153,108 @@ const Customers = () => {
             </button>
           </div>
 
-          {/* Customers Table */}
-          <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-6 py-3 text-left">
-                      <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Phone</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Join Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Orders</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Spent</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {customers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-6 py-4">
-                        <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <span className="text-sm font-medium text-primary">
-                              {customer.name.split(" ").map(n => n[0]).join("")}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{customer.name}</p>
-                            <p className="text-xs text-muted-foreground">{customer.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{customer.phone}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{customer.joinDate}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{customer.orders}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{customer.spent}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          customer.status === "Active" ? "bg-success/10 text-success" :
-                          customer.status === "VIP" ? "bg-primary/10 text-primary" :
-                          "bg-muted text-muted-foreground"
-                        }`}>
-                          {customer.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <Link to={`/admin/customers/${customer.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                          View Profile
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Loading State */}
+          {loading && (
+            <div className="rounded-xl border border-border bg-card shadow-card p-12 text-center">
+              <p className="text-muted-foreground">Loading customers...</p>
             </div>
+          )}
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-border px-6 py-4">
-              <p className="text-sm text-muted-foreground">
-                Showing <span className="font-medium text-foreground">1</span> to <span className="font-medium text-foreground">8</span> of <span className="font-medium text-foreground">892</span> customers
-              </p>
-              <div className="flex items-center gap-2">
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50" disabled>
-                  Previous
-                </button>
-                <button className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">1</button>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">2</button>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">3</button>
-                <span className="text-muted-foreground">...</span>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">112</button>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                  Next
-                </button>
+          {/* Error State */}
+          {error && !loading && (
+            <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-6 text-center">
+              <p className="text-destructive font-medium">Error: {error}</p>
+              <button 
+                onClick={fetchCustomers}
+                className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Customers Table */}
+          {!loading && !error && (
+            <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="px-6 py-3 text-left">
+                        <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Phone</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Join Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Orders</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredCustomers.length > 0 ? (
+                      filteredCustomers.map((customer) => (
+                        <tr key={customer.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="px-6 py-4">
+                            <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <span className="text-sm font-medium text-primary">
+                                  {getCustomerInitials(customer)}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-foreground">{getCustomerName(customer) || 'N/A'}</p>
+                                <p className="text-xs text-muted-foreground">{customer.email || ''}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                            {customer.phone || ''}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                            {formatDate(customer.created_at)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                            {customer.order_history?.length || 0}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              getCustomerStatus(customer) === "Active" ? "bg-success/10 text-success" :
+                              getCustomerStatus(customer) === "VIP" ? "bg-primary/10 text-primary" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {getCustomerStatus(customer)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <Link to={`/admin/customers/${customer.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                              View Profile
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="px-6 py-12 text-center text-muted-foreground">
+                          No customers found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between border-t border-border px-6 py-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-medium text-foreground">{filteredCustomers.length}</span> of <span className="font-medium text-foreground">{customers.length}</span> customers
+                </p>
               </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
     </div>

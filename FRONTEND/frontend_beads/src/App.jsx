@@ -2,6 +2,7 @@ import {Route, Routes ,Navigate} from "react-router-dom"
 import Navbar from "../src/components/ui/Navbar"
 import Footer from "../src/components/ui/Footer"
 import { Toaster } from "react-hot-toast";
+import { isAdmin } from "./utils/auth";
 
 import HomePage from "./pages/main_pages/HomePage";
 import CartPage from './pages/main_pages/CartPage';
@@ -28,6 +29,11 @@ import OrderDetails from "./pages/admin/components/OrderDetails";
 import { useLocation } from "react-router-dom";
 import ProductForm from "./pages/admin/components/ProductForm";
 import { useEffect } from "react";
+
+// Admin route wrapper
+function AdminRoute({ children }) {
+  return isAdmin() ? children : <Navigate to="/login" replace />;
+}
 
 function App() {
   const location = useLocation();
@@ -57,17 +63,17 @@ function App() {
         <Route path="/signup" element={<SignUpPage />} />
 
         
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/settings" element={<Settings />} />
-        <Route path="/admin/products" element={<Product />} />
-        <Route path="/admin/products/add" element={<ProductForm />} />
-        <Route path="/admin/products/edit/:id" element={<ProductForm />} />
-        <Route path="/admin/customers" element={<Customer />} />
-        <Route path="/admin/customers/:id" element={<CustomerProfile />} />
-        <Route path="/admin/orders" element={<Orders />} />
-        <Route path="/admin/orders/:id" element={<OrderDetails />} />
-        <Route path="/admin/payments" element={<Payment />} />
-        <Route path="/admin/shipping" element={<Shipping />} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+        <Route path="/admin/products" element={<AdminRoute><Product /></AdminRoute>} />
+        <Route path="/admin/products/add" element={<AdminRoute><ProductForm /></AdminRoute>} />
+        <Route path="/admin/products/edit/:id" element={<AdminRoute><ProductForm /></AdminRoute>} />
+        <Route path="/admin/customers" element={<AdminRoute><Customer /></AdminRoute>} />
+        <Route path="/admin/customers/:id" element={<AdminRoute><CustomerProfile /></AdminRoute>} />
+        <Route path="/admin/orders" element={<AdminRoute><Orders /></AdminRoute>} />
+        <Route path="/admin/orders/:id" element={<AdminRoute><OrderDetails /></AdminRoute>} />
+        <Route path="/admin/payments" element={<AdminRoute><Payment /></AdminRoute>} />
+        <Route path="/admin/shipping" element={<AdminRoute><Shipping /></AdminRoute>} />
       </Routes>
       {!hideNavFooter && <Footer />}
     </>

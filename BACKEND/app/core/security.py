@@ -48,9 +48,10 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(oauth2_
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         email = payload.get("email")
+        is_admin = payload.get("is_admin", False)
         if user_id is None or email is None:
             raise HTTPException(status_code=401, detail="Invalid token payload")
-        return {"user_id": user_id, "email": email}
+        return {"user_id": user_id, "email": email, "is_admin": is_admin}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
