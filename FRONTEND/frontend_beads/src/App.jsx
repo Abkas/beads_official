@@ -6,6 +6,8 @@ import { isAdmin } from "./utils/auth";
 
 import HomePage from "./pages/main_pages/HomePage";
 import CartPage from './pages/main_pages/CartPage';
+import CheckoutPage from './pages/main_pages/CheckoutPage';
+import OrderDetailPage from './pages/main_pages/OrderDetailPage';
 import ShopPage from "./pages/main_pages/ShopPage";
 import ProductDetail from "./pages/main_pages/ProductDetail";
 import WishlistPage from "./pages/main_pages/WishlistPage";
@@ -57,6 +59,8 @@ function App() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/contact" element={<ContactUsPage />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/login" element={<LoginPage />} />

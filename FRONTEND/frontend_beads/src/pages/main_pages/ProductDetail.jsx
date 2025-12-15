@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { getAllProducts } from "../../api/admin/productApi";
+import { addToCart } from "../../api/cartApi";
 import { Heart, ShoppingCart, TruckIcon, ShieldCheck, ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -60,8 +61,14 @@ export default function ProductDetail() {
 
   const images = product.image_urls && product.image_urls.length > 0 ? product.image_urls : ["/placeholder.svg"];
 
-  const handleAddToCart = () => {
-    toast.success(`${product.name} added to cart!`);
+  const handleAddToCart = async () => {
+    try {
+      await addToCart(product.id, 1);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add to cart. Please login first.");
+    }
   };
 
   const handleAddToWishlist = () => {

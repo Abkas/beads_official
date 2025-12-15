@@ -13,15 +13,17 @@ def get_cart(user_id):
     total_items = 0
     total_price = 0.0
     for item in cart.get('items', []):
-        # Fetch product details (name, price) from products collection
+        # Fetch product details (name, price, image) from products collection
         product = db['products'].find_one({'_id': ObjectId(item['product_id'])})
         product_name = product['name'] if product else "Unknown"
         price = product['price'] if product else 0.0
+        product_image = product.get('image_urls', [None])[0] if product else None
         quantity = item.get('quantity', 1)
         subtotal = price * quantity
         cart_items.append({
             "product_id": item['product_id'],
             "product_name": product_name,
+            "product_image": product_image,
             "quantity": quantity,
             "price": price,
             "subtotal": subtotal

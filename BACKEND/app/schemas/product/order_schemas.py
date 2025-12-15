@@ -8,6 +8,7 @@ class OrderItemSchema(BaseModel):
     product_name: str 
     quantity: int = Field(ge=1)
     price: float = Field(ge=0)
+    product_image: Optional[str] = Field(default=None, description="Product image URL")
 class OrderCreate(BaseModel):
     address_index: int = Field(ge=0, description="Which saved address to use (0 = first address)")
     payment_method: str = Field(description="Payment method: cod, esewa, khalti, bank_transfer")
@@ -21,9 +22,10 @@ class OrderResponse(BaseModel):
     subtotal: float = Field(ge=0)
     shipping_cost: float = Field(ge=0)
     discount_amount: float = Field(ge=0, default=0.0, description="Discount applied from coupon")
-    coupon_code: str = Field(default=None, description="Coupon code if any")
+    coupon_code: Optional[str] = Field(default=None, description="Coupon code if any")
     total: float = Field(ge=0)
     shipping_address: dict 
+    payment_method: str = Field(description="Payment method: cod, esewa, khalti, bank_transfer")
     status: str = Field(description="Order status: pending, processing, shipped, delivered, cancelled")
     payment_status: str = Field(description="Payment status: unpaid, paid, failed, refunded")
     created_at: datetime = Field(description="When order was placed")

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 
 class CartItemAdd(BaseModel):
@@ -40,6 +40,7 @@ class CartItemRemove(BaseModel):
 class CartItemResponse(BaseModel):
     product_id: str
     product_name: str  # Fetched from product collection
+    product_image: Optional[str] = None  # First image from product
     quantity: int
     price: float
     subtotal: float  # price * quantity
@@ -49,6 +50,7 @@ class CartItemResponse(BaseModel):
             "example": {
                 "product_id": "64a1b2c3d4e5f6789012345",
                 "product_name": "Wireless Mouse",
+                "product_image": "https://example.com/image.jpg",
                 "quantity": 2,
                 "price": 25.99,
                 "subtotal": 51.98

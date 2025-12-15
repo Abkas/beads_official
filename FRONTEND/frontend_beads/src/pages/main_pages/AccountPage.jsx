@@ -16,6 +16,13 @@ const AccountPage = () => {
     if (!localStorage.getItem("access_token")) {
       navigate("/");
     }
+    
+    // Check for tab query parameter
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
   }, [navigate]);
 
   const tabs = [

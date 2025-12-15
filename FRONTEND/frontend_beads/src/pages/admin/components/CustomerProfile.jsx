@@ -290,19 +290,19 @@ const CustomerProfile = () => {
                   <div className="rounded-xl border border-border bg-card p-6 shadow-card">
                     <p className="text-sm text-muted-foreground">Total Orders</p>
                     <p className="text-2xl font-bold text-foreground mt-1">
-                      {customer.order_history?.length || 0}
+                      {customer.total_orders || 0}
                     </p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-6 shadow-card">
                     <p className="text-sm text-muted-foreground">Cart Items</p>
                     <p className="text-2xl font-bold text-foreground mt-1">
-                      {customer.Cart?.length || 0}
+                      {customer.cart_items || 0}
                     </p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-6 shadow-card">
                     <p className="text-sm text-muted-foreground">Wishlist Items</p>
                     <p className="text-2xl font-bold text-foreground mt-1">
-                      {customer.wishlist?.length || 0}
+                      {customer.wishlist_items || 0}
                     </p>
                   </div>
                 </div>
@@ -310,34 +310,80 @@ const CustomerProfile = () => {
                 {/* Order History */}
                 <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
                   <div className="p-6 border-b border-border">
-                    <h3 className="text-lg font-semibold text-foreground">Order History</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Recent Orders</h3>
                   </div>
-                  {customer.order_history && customer.order_history.length > 0 ? (
+                  {customer.orders && customer.orders.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-border bg-muted/50">
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Order ID</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Items</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Payment</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                          {customer.order_history.map((orderId, idx) => (
-                            <tr key={idx} className="hover:bg-muted/30 transition-colors">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
-                                {orderId}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground"></td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground"></td>
-                            </tr>
-                          ))}
+                          {customer.orders.map((order) => {
+                            const getStatusColor = (status) => {
+                              const colors = {
+                                pending: 'bg-yellow-100 text-yellow-800',
+                                processing: 'bg-blue-100 text-blue-800',
+                                shipped: 'bg-purple-100 text-purple-800',
+                                delivered: 'bg-green-100 text-green-800',
+                                cancelled: 'bg-red-100 text-red-800'
+                              };
+                              return colors[status] || 'bg-gray-100 text-gray-800';
+                            };
+
+                            const getPaymentColor = (status) => {
+                              const colors = {
+                                paid: 'bg-green-100 text-green-800',
+                                unpaid: 'bg-yellow-100 text-yellow-800',
+                                failed: 'bg-red-100 text-red-800',
+                                refunded: 'bg-blue-100 text-blue-800'
+                              };
+                              return colors[status] || 'bg-gray-100 text-gray-800';
+                            };
+
+                            return (
+                              <tr key={order.id} className="hover:bg-muted/30 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                                  #{order.id.slice(-8).toUpperCase()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                                  {formatDate(order.created_at)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                                  {order.item_count} {order.item_count === 1 ? 'item' : 'items'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground">
+                                  NPR {order.total.toFixed(2)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentColor(order.payment_status)}`}>
+                                    {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
                   ) : (
                     <div className="p-12 text-center">
-                      <p className="text-muted-foreground">No order history</p>
+                      <svg className="h-16 w-16 mx-auto text-muted-foreground mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                      <p className="text-muted-foreground">No orders yet</p>
                     </div>
                   )}
                 </div>

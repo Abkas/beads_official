@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../../components/ui/ProductCard";
 import { getAllProducts } from "../../api/admin/productApi";
+import { addToCart } from "../../api/cartApi";
+import toast from "react-hot-toast";
 
 export default function ShopPage() {
   const navigate = useNavigate();
@@ -43,6 +45,20 @@ export default function ShopPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddToCart = async (product) => {
+    try {
+      await addToCart(product.id, 1);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add to cart. Please login first.");
+    }
+  };
+
+  const handleAddToWishlist = (product) => {
+    toast.success(`${product.name} added to wishlist!`);
   };
 
   const filteredProducts = products;
@@ -124,8 +140,14 @@ export default function ShopPage() {
                       description: product.description
                     }}
                     onViewDetail={() => navigate(`/product/${product.id}`)}
-                    onAddToCart={() => alert(`Added ${product.name} to cart!`)}
-                    onAddToWishlist={() => alert(`Added ${product.name} to wishlist!`)}
+                    onAddToCart={() => handleAddToCart({
+                      id: product.id,
+                      name: product.name
+                    })}
+                    onAddToWishlist={() => handleAddToWishlist({
+                      id: product.id,
+                      name: product.name
+                    })}
                   />
                 ))}
               </div>
