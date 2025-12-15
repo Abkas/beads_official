@@ -13,5 +13,7 @@ class Category(BaseModel):
 
     image_url: Optional[str] = Field(default = None)
     is_active: bool = Field(default=True, description="Whether the category is active")
+    
+    product_count: Optional[int] = Field(default=0, description="Number of products in this category")
 
     created_at : datetime = Field(Default_factory = datetime.now)

@@ -73,6 +73,7 @@ class CategoryListItem(BaseModel):
     parent_category: Optional[str] = None
     image_url: Optional[str] = None
     is_active: bool
+    product_count: Optional[int] = 0
 
 
 class CategoryToggleActive(BaseModel):

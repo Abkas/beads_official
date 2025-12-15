@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.product.category_schemas import CategoryCreate, CategoryUpdate, CategoryResponse, CategoryListItem, CategoryToggleActive
-from app.services.product.category_service import get_all_categories, get_category_by_id , create_category, update_category, toggle_category_active,delete_category
+from app.services.product.category_service import get_all_categories, get_category_by_id , create_category, update_category, toggle_category_active, delete_category, get_category_products
 from app.core.security import get_admin_user
 from fastapi import Body
 from app.schemas.product.category_schemas import CategoryToggleActive
@@ -26,6 +26,15 @@ def get_category_by_id_route(category_id: str):
     if result:
         return result.dict(by_alias=True)
     return None
+
+
+@router.get('/{category_id}/products')
+def get_category_products_route(category_id: str):
+    """Get all products under a specific category"""
+    result = get_category_products(category_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return result
 
 
 # Admin Routes
@@ -66,5 +75,8 @@ def delete_category_route (
     category_id: str,
     admin_user: dict = Depends(get_admin_user)
 ):
-    delete_category(category_id)
-    return None
+    try:
+        delete_category(category_id)
+        return None
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
