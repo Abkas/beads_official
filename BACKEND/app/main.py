@@ -7,6 +7,7 @@ from app.route.product.category_routes import router as category_router
 from app.route.product.order_routes import router as order_router
 from app.route.product.product_routes import router as product_router
 from app.route.product.review_routes import router as review_router
+from app.route.product.offer_routes import router as offer_router
 from app.route.user.user_routes import router as user_router
 from app.route.user.address_routes import router as address_router
 from app.route.user.cart_routes import router as cart_router
@@ -21,6 +22,7 @@ app.include_router(category_router)
 app.include_router(order_router)
 app.include_router(product_router)
 app.include_router(review_router)
+app.include_router(offer_router)
 app.include_router(user_router)
 app.include_router(address_router)
 app.include_router(cart_router)

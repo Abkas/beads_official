@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import NavItems from "../ui/NavItems";
 import { verifyToken } from "../../../api/UserApi";
 import { getAllCategories, deleteCategory } from "../../../api/admin/categoryApi";
+import { getAllOffers, deleteOffer } from "../../../api/admin/offerApi";
 import CategoryForm from "../components/CategoryForm";
 import toast from "react-hot-toast";
 
@@ -10,9 +11,11 @@ const Settings = () => {
   const navigate = useNavigate();
   const [adminData, setAdminData] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [showAddOffer, setShowAddOffer] = useState(false);
 
   // Fetch admin data
   useEffect(() => {
@@ -50,6 +53,24 @@ const Settings = () => {
     fetchCategories();
   }, []);
 
+  // Fetch offers
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const data = await getAllOffers();
+        const normalizedData = data.map(offer => ({
+          ...offer,
+          id: offer.id || offer._id
+        }));
+        setOffers(normalizedData);
+      } catch (error) {
+        console.error("Error fetching offers:", error);
+        toast.error("Failed to load offers");
+      }
+    };
+    fetchOffers();
+  }, []);
+
   const handleCategoryAdded = (newCategory) => {
     setCategories([...categories, newCategory]);
     setShowAddCategory(false);
@@ -79,12 +100,17 @@ const Settings = () => {
     }
   };
 
-  const tags = [
-    { id: 1, name: "Featured", color: "bg-primary" },
-    { id: 2, name: "New Arrival", color: "bg-success" },
-    { id: 3, name: "Best Seller", color: "bg-warning" },
-    { id: 4, name: "Sale", color: "bg-destructive" },
-  ];
+  const handleDeleteOffer = async (offerId) => {
+    if (!confirm("Are you sure you want to delete this offer?")) return;
+
+    try {
+      await deleteOffer(offerId);
+      setOffers(offers.filter(offer => offer.id !== offerId));
+      toast.success("Offer deleted successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to delete offer");
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -359,35 +385,68 @@ const Settings = () => {
               </div>
             </div>
 
-            {/* Tags */}
+            {/* Offers/Promotions */}
             <div className="rounded-xl border border-border bg-card p-6 shadow-card">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-foreground">Product Tags</h2>
-                <button className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-                  Add Tag
+                <h2 className="text-lg font-semibold text-foreground">Offers & Promotions</h2>
+                <button 
+                  onClick={() => setShowAddOffer(!showAddOffer)}
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Add Offer
                 </button>
               </div>
               <div className="space-y-3">
-                {tags.map((tag) => (
-                  <div key={tag.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-3 w-3 rounded-full ${tag.color}`}></div>
-                      <p className="text-sm font-medium text-foreground">{tag.name}</p>
+                {offers.length > 0 ? (
+                  offers.map((offer) => (
+                    <div key={offer.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-3 w-3 rounded-full ${offer.color}`}></div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium text-foreground">{offer.name}</p>
+                            {offer.icon && <span className="text-sm">{offer.icon}</span>}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {offer.discount_type === 'percentage' ? `${offer.discount_value}% off` : `$${offer.discount_value} off`}
+                            {offer.bonus_text && ` • ${offer.bonus_text}`}
+                            {offer.product_count > 0 && (
+                              <>
+                                {` • ${offer.product_count} products`}
+                                <button
+                                  onClick={() => navigate(`/admin/products?offer=${offer.id}`)}
+                                  className="ml-2 text-primary hover:underline"
+                                >
+                                  View
+                                </button>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-xs ${offer.is_active ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                          {offer.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteOffer(offer.id)}
+                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">No offers found</div>
+                )}
               </div>
             </div>
           </div>

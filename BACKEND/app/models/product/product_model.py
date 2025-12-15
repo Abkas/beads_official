@@ -18,6 +18,7 @@ class Product(BaseModel):
     category : str = Field(description = "Product category", default = 'Basic')
     subcategory : Optional[str] = Field(default = None)
     tags : List[str] = Field(default = [])
+    offers: List[str] = Field(default=[], description="List of offer names applied to this product")
 
     image_urls :List[str] = Field(default= [])
 

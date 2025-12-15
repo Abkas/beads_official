@@ -14,6 +14,7 @@ class CreateProduct(BaseModel):
     category: Optional[str]
     subcategory : Optional[str]
     tags : List[str] = Field(default=[]) 
+    offers: List[str] = Field(default=[])
 
     image_urls: List[str] = Field(default=[]) 
     is_available : Optional[bool]
@@ -22,7 +23,8 @@ class ProductDetailUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
     category: Optional[str]
-    tags: Optional[List[str]] = None   
+    tags: Optional[List[str]] = None
+    offers: Optional[List[str]] = None
     image_urls: Optional[List[str]] = None
     is_active: Optional[bool] = None 
 
@@ -52,6 +54,8 @@ class ProductResponse(BaseModel):
 
     category : str
     subcategory : Optional[str]
+    tags: List[str]
+    offers: List[str]
 
     ratings : float
     review_count : int
