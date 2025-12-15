@@ -175,6 +175,45 @@ def get_order_by_id(order_id, user_id):
 	}
 	return response
 
+def get_order_by_id_admin(order_id):
+	"""Get order by ID for admin - no user_id restriction"""
+	order = db["orders"].find_one({"_id": ObjectId(order_id)})
+	if not order:
+		return None
+	
+	# Enrich items with product images
+	items = order.get("items", [])
+	enriched_items = []
+	for item in items:
+		enriched_item = dict(item)
+		# Fetch product image if not already present
+		if "product_image" not in enriched_item or not enriched_item.get("product_image"):
+			product_id = item.get("product_id")
+			if product_id:
+				product = db["products"].find_one({"_id": ObjectId(product_id)})
+				if product:
+					image_urls = product.get("image_urls", [])
+					enriched_item["product_image"] = image_urls[0] if image_urls else None
+		enriched_items.append(enriched_item)
+	
+	response = {
+		"id": str(order.get("_id")),
+		"user_id": order.get("user_id", ""),
+		"items": enriched_items,
+		"subtotal": order.get("subtotal", 0.0),
+		"shipping_cost": order.get("shipping_cost", 0.0),
+		"discount_amount": order.get("discount_amount", 0.0),
+		"coupon_code": order.get("coupon_code", None),
+		"total": order.get("total", 0.0),
+		"shipping_address": order.get("shipping_address", {}),
+		"payment_method": order.get("payment_method", "cod"),
+		"status": order.get("status", "pending"),
+		"payment_status": order.get("payment_status", "unpaid"),
+		"created_at": order.get("created_at"),
+		"item_count": len(order.get("items", []))
+	}
+	return response
+
 def cancel_order(order_id, user_id):
 	result = db["orders"].update_one(
 		{"_id": ObjectId(order_id), "user_id": user_id},
@@ -208,7 +247,7 @@ def update_order_status(order_id, status):
 		{"$set": {"status": status}}
 	)
 	if result.modified_count:
-		return db["orders"].find_one({"_id": ObjectId(order_id)})
+		return get_order_by_id_admin(order_id)
 	return None
 
 def update_payment_status(order_id, payment_status):
@@ -217,22 +256,7 @@ def update_payment_status(order_id, payment_status):
 		{"$set": {"payment_status": payment_status}}
 	)
 	if result.modified_count:
-		order = db["orders"].find_one({"_id": ObjectId(order_id)})
-		if order:
-			response = {
-				"id": str(order.get("_id")),
-				"user_id": order.get("user_id", ""),
-				"items": order.get("items", []),
-				"subtotal": order.get("subtotal", 0.0),
-				"shipping_cost": order.get("shipping_cost", 0.0),
-				"total": order.get("total", 0.0),
-				"shipping_address": order.get("shipping_address", {}),
-				"status": order.get("status", "pending"),
-				"payment_status": order.get("payment_status", "unpaid"),
-				"created_at": order.get("created_at"),
-				"item_count": len(order.get("items", []))
-			}
-			return response
+		return get_order_by_id_admin(order_id)
 	return None
 
 db = client['beads_db']  # Use your DB name here

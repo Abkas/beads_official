@@ -1,44 +1,115 @@
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import NavItems from "../ui/NavItems";
+import { getOrderByIdAdmin, updateOrderStatus, updatePaymentStatus } from "../../../api/orderApi";
+import toast from "react-hot-toast";
 
 const OrderDetails = () => {
-  // Removed useLocation, handled in NavItems
   const { id } = useParams();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  // TODO: call GET /api/orders/:id
-  const order = {
-    id: id || "ORD-001",
-    date: "January 15, 2024",
-    customer: {
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+1 (555) 123-4567"
-    },
-    shipping: {
-      address: "123 Main Street",
-      city: "New York",
-      state: "NY",
-      zip: "10001",
-      country: "United States",
-      method: "Express Shipping",
-      status: "Shipped",
-      tracking: "1Z999AA10123456784"
-    },
-    payment: {
-      method: "Visa ending in 4242",
-      status: "Paid",
-      subtotal: "$279.00",
-      shipping: "$20.00",
-      tax: "$22.32",
-      total: "$321.32"
-    },
-    items: [
-      { id: 1, name: "Wireless Bluetooth Headphones", sku: "WBH-001", price: "$99.00", quantity: 2, total: "$198.00", image: "/placeholder.svg" },
-      { id: 2, name: "USB-C Hub 7-in-1", sku: "UCH-001", price: "$79.00", quantity: 1, total: "$79.00", image: "/placeholder.svg" },
-    ]
+  useEffect(() => {
+    if (id) {
+      fetchOrderDetails();
+    }
+  }, [id]);
+
+  const fetchOrderDetails = async () => {
+    try {
+      setLoading(true);
+      const data = await getOrderByIdAdmin(id);
+      setOrder(data);
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      toast.error("Failed to load order details");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Removed navItems, now using shared NavItems
+  const handleStatusChange = async (newStatus) => {
+    try {
+      setUpdatingStatus(true);
+      await updateOrderStatus(id, newStatus);
+      toast.success("Order status updated");
+      fetchOrderDetails();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Failed to update status");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handlePaymentStatusChange = async (newPaymentStatus) => {
+    try {
+      setUpdatingStatus(true);
+      await updatePaymentStatus(id, newPaymentStatus);
+      toast.success("Payment status updated");
+      fetchOrderDetails();
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      toast.error("Failed to update payment status");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: "bg-warning/10 text-warning",
+      processing: "bg-info/10 text-info",
+      shipped: "bg-info/10 text-info",
+      delivered: "bg-success/10 text-success",
+      cancelled: "bg-destructive/10 text-destructive"
+    };
+    return colors[status] || "bg-muted text-muted-foreground";
+  };
+
+  const getPaymentStatusColor = (status) => {
+    const colors = {
+      paid: "bg-success/10 text-success",
+      unpaid: "bg-warning/10 text-warning",
+      failed: "bg-destructive/10 text-destructive",
+      refunded: "bg-muted text-muted-foreground"
+    };
+    return colors[status] || "bg-muted text-muted-foreground";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+          <p className="mt-4 text-base text-muted-foreground">Loading order details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <p className="text-xl mb-4 text-foreground">Order not found</p>
+          <Link to="/admin/orders" className="text-primary hover:text-primary/80">
+            Back to Orders
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -65,9 +136,9 @@ const OrderDetails = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
-            <h1 className="text-lg font-semibold text-foreground">Order {order.id}</h1>
-            <span className="inline-flex items-center rounded-full bg-info/10 px-2.5 py-0.5 text-xs font-medium text-info">
-              {order.shipping.status}
+            <h1 className="text-lg font-semibold text-foreground">Order #{order.order_id}</h1>
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.status)}`}>
+              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -103,27 +174,33 @@ const OrderDetails = () => {
                     <thead>
                       <tr className="border-b border-border bg-muted/50">
                         <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Product</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">SKU</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Price</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Qty</th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {order.items.map((item) => (
-                        <tr key={item.id}>
+                      {order.items.map((item, index) => (
+                        <tr key={index}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-3">
                               <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                                {item.product_image ? (
+                                  <img src={item.product_image} alt={item.product_name} className="h-full w-full object-cover" />
+                                ) : (
+                                  <svg className="h-6 w-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                )}
                               </div>
-                              <span className="text-sm font-medium text-foreground">{item.name}</span>
+                              <span className="text-sm font-medium text-foreground">{item.product_name}</span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{item.sku}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{item.price}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">NPR {item.price.toLocaleString()}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{item.quantity}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground text-right">{item.total}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground text-right">
+                            NPR {(item.price * item.quantity).toLocaleString()}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -133,19 +210,21 @@ const OrderDetails = () => {
                   <div className="flex flex-col gap-2 max-w-xs ml-auto">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span className="text-foreground">{order.payment.subtotal}</span>
+                      <span className="text-foreground">NPR {order.subtotal.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Shipping</span>
-                      <span className="text-foreground">{order.payment.shipping}</span>
+                      <span className="text-foreground">NPR {order.shipping_cost.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Tax</span>
-                      <span className="text-foreground">{order.payment.tax}</span>
-                    </div>
+                    {order.discount_amount > 0 && (
+                      <div className="flex justify-between text-sm text-success">
+                        <span>Discount {order.coupon_code && `(${order.coupon_code})`}</span>
+                        <span>-NPR {order.discount_amount.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm font-semibold pt-2 border-t border-border">
                       <span className="text-foreground">Total</span>
-                      <span className="text-foreground">{order.payment.total}</span>
+                      <span className="text-foreground">NPR {order.total.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -176,51 +255,65 @@ const OrderDetails = () => {
 
             {/* Sidebar Info */}
             <div className="space-y-6">
-              {/* Customer */}
+              {/* Order Info */}
               <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Customer</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">Order Info</h2>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-sm font-medium text-primary">JD</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{order.customer.name}</p>
-                      <p className="text-xs text-muted-foreground">{order.customer.email}</p>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Order ID</span>
+                    <span className="text-sm font-medium text-foreground">{order.order_id}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{order.customer.phone}</p>
-                  <Link to="/customers/1" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                    View Profile →
-                  </Link>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">User ID</span>
+                    <span className="text-sm font-medium text-foreground">{order.user_id}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Created</span>
+                    <span className="text-sm text-foreground">{formatDate(order.created_at)}</span>
+                  </div>
+                  {order.updated_at && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Updated</span>
+                      <span className="text-sm text-foreground">{formatDate(order.updated_at)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Shipping */}
               <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Shipping</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">Shipping Address</h2>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-foreground">{order.shipping.method}</p>
+                    <p className="text-sm font-medium text-foreground">{order.shipping_address.full_name}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {order.shipping.address}<br />
-                      {order.shipping.city}, {order.shipping.state} {order.shipping.zip}<br />
-                      {order.shipping.country}
+                      {order.shipping_address.address_line_1}<br />
+                      {order.shipping_address.address_line_2 && (
+                        <>{order.shipping_address.address_line_2}<br /></>
+                      )}
+                      {order.shipping_address.city}, {order.shipping_address.state}<br />
+                      {order.shipping_address.country} - {order.shipping_address.postal_code}
                     </p>
                   </div>
                   <div className="pt-3 border-t border-border">
-                    <p className="text-xs text-muted-foreground">Tracking Number</p>
-                    <p className="text-sm font-medium text-primary">{order.shipping.tracking}</p>
+                    <p className="text-xs text-muted-foreground">Phone</p>
+                    <p className="text-sm font-medium text-foreground">{order.shipping_address.phone_number}</p>
                   </div>
-                  <select
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    defaultValue={order.shipping.status}
-                  >
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
+                  <div className="pt-3 border-t border-border">
+                    <label className="text-xs text-muted-foreground mb-2 block">Order Status</label>
+                    <select
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      disabled={updatingStatus}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -230,17 +323,33 @@ const OrderDetails = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <span className="inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
-                      {order.payment.status}
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getPaymentStatusColor(order.payment_status)}`}>
+                      {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Update Payment Status</label>
+                    <select
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      value={order.payment_status}
+                      onChange={(e) => handlePaymentStatusChange(e.target.value)}
+                      disabled={updatingStatus}
+                    >
+                      <option value="unpaid">Unpaid</option>
+                      <option value="paid">Paid</option>
+                      <option value="failed">Failed</option>
+                      <option value="refunded">Refunded</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center justify-between pt-3 border-t border-border">
                     <span className="text-sm text-muted-foreground">Method</span>
-                    <span className="text-sm text-foreground">{order.payment.method}</span>
+                    <span className="text-sm text-foreground">
+                      {order.payment_method ? order.payment_method.charAt(0).toUpperCase() + order.payment_method.slice(1) : 'N/A'}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-border">
                     <span className="text-sm font-medium text-foreground">Total</span>
-                    <span className="text-sm font-bold text-foreground">{order.payment.total}</span>
+                    <span className="text-sm font-bold text-foreground">NPR {order.total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

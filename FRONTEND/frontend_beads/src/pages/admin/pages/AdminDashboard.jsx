@@ -1,7 +1,51 @@
+import { useState, useEffect } from "react";
 import NavItems from "../ui/NavItems";
 import { Link } from "react-router-dom";
+import { getAllOrdersAdmin } from "../../../api/orderApi";
+import toast from "react-hot-toast";
 
 const AdminDashboard = () => {
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    fetchRecentOrders();
+  }, []);
+
+  const fetchRecentOrders = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllOrdersAdmin();
+      // Get only the 5 most recent orders
+      const sortedOrders = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setRecentOrders(sortedOrders.slice(0, 5));
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast.error("Failed to load recent orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: "bg-warning/10 text-warning",
+      processing: "bg-info/10 text-info",
+      shipped: "bg-primary/10 text-primary",
+      delivered: "bg-success/10 text-success",
+      cancelled: "bg-destructive/10 text-destructive"
+    };
+    return colors[status] || "bg-muted text-muted-foreground";
+  };
   
   // TODO: call GET /api/dashboard/stats
   const stats = {
@@ -10,15 +54,6 @@ const AdminDashboard = () => {
     totalCustomers: 892,
     pendingOrders: 23
   };
-
-  // TODO: call GET /api/orders/recent
-  const recentOrders = [
-    { id: "ORD-001", customer: "John Doe", total: "$299.00", status: "Completed", date: "2024-01-15" },
-    { id: "ORD-002", customer: "Jane Smith", total: "$549.00", status: "Processing", date: "2024-01-15" },
-    { id: "ORD-003", customer: "Mike Johnson", total: "$129.00", status: "Pending", date: "2024-01-14" },
-    { id: "ORD-004", customer: "Sarah Wilson", total: "$899.00", status: "Shipped", date: "2024-01-14" },
-    { id: "ORD-005", customer: "Chris Brown", total: "$199.00", status: "Completed", date: "2024-01-13" },
-  ];
 
 
   return (
@@ -202,45 +237,67 @@ const AdminDashboard = () => {
                 View all →
               </Link>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Order ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{order.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">{order.customer}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{order.total}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          order.status === "Completed" ? "bg-success/10 text-success" :
-                          order.status === "Processing" ? "bg-info/10 text-info" :
-                          order.status === "Shipped" ? "bg-primary/10 text-primary" :
-                          "bg-warning/10 text-warning"
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{order.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <Link to={`/orders/${order.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                          View
-                        </Link>
-                      </td>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                <p className="ml-3 text-muted-foreground">Loading orders...</p>
+              </div>
+            ) : recentOrders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <svg className="h-16 w-16 text-muted-foreground mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-foreground font-medium mb-1">No orders yet</p>
+                <p className="text-sm text-muted-foreground">Orders will appear here once customers place them</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Order ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">User ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Items</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {recentOrders.map((order) => (
+                      <tr key={order._id || order.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                          #{(order._id || order.id)?.slice(-8).toUpperCase()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                          {order.user_id?.slice(0, 8)}...
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
+                          NPR {order.total?.toLocaleString() || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                          {order.item_count} {order.item_count === 1 ? 'item' : 'items'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.status)}`}>
+                            {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                          {formatDate(order.created_at)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <Link to={`/admin/orders/${order._id || order.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </main>
       </div>

@@ -1,21 +1,82 @@
+import { useState, useEffect } from "react";
 import NavItems from "../ui/NavItems";
 import { Link } from "react-router-dom";
+import { getAllOrdersAdmin } from "../../../api/orderApi";
+import toast from "react-hot-toast";
 
 
 const Orders = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  // TODO: call GET /api/orders
-  const orders = [
-    { id: "ORD-001", customer: "John Doe", email: "john@example.com", total: "$299.00", items: 3, payment: "Paid", shipping: "Delivered", date: "2024-01-15" },
-    { id: "ORD-002", customer: "Jane Smith", email: "jane@example.com", total: "$549.00", items: 2, payment: "Paid", shipping: "Shipped", date: "2024-01-15" },
-    { id: "ORD-003", customer: "Mike Johnson", email: "mike@example.com", total: "$129.00", items: 1, payment: "Pending", shipping: "Processing", date: "2024-01-14" },
-    { id: "ORD-004", customer: "Sarah Wilson", email: "sarah@example.com", total: "$899.00", items: 5, payment: "Paid", shipping: "Shipped", date: "2024-01-14" },
-    { id: "ORD-005", customer: "Chris Brown", email: "chris@example.com", total: "$199.00", items: 2, payment: "Failed", shipping: "Cancelled", date: "2024-01-13" },
-    { id: "ORD-006", customer: "Emily Davis", email: "emily@example.com", total: "$449.00", items: 4, payment: "Paid", shipping: "Delivered", date: "2024-01-13" },
-    { id: "ORD-007", customer: "David Lee", email: "david@example.com", total: "$79.00", items: 1, payment: "Refunded", shipping: "Returned", date: "2024-01-12" },
-    { id: "ORD-008", customer: "Lisa Chen", email: "lisa@example.com", total: "$329.00", items: 3, payment: "Paid", shipping: "Processing", date: "2024-01-12" },
-  ];
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllOrdersAdmin();
+      setOrders(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast.error("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: "bg-warning/10 text-warning",
+      processing: "bg-info/10 text-info",
+      shipped: "bg-info/10 text-info",
+      delivered: "bg-success/10 text-success",
+      cancelled: "bg-destructive/10 text-destructive"
+    };
+    return colors[status] || "bg-muted text-muted-foreground";
+  };
+
+  const getPaymentStatusColor = (status) => {
+    const colors = {
+      paid: "bg-success/10 text-success",
+      unpaid: "bg-warning/10 text-warning",
+      failed: "bg-destructive/10 text-destructive",
+      refunded: "bg-muted text-muted-foreground"
+    };
+    return colors[status] || "bg-muted text-muted-foreground";
+  };
+
+  // Filter orders based on search and filter criteria
+  const filteredOrders = orders.filter((order) => {
+    // Search filter
+    const matchesSearch = searchQuery === "" || 
+      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.order_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.user_id?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Payment status filter
+    const matchesPayment = paymentFilter === "all" || 
+      order.payment_status.toLowerCase() === paymentFilter.toLowerCase();
+
+    // Order status filter
+    const matchesStatus = statusFilter === "all" || 
+      order.status.toLowerCase() === statusFilter.toLowerCase();
+
+    return matchesSearch && matchesPayment && matchesStatus;
+  });
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -69,22 +130,33 @@ const Orders = () => {
               <input
                 type="text"
                 placeholder="Search orders..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-lg border border-border bg-background py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
-            <select className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-              <option>All Payment Status</option>
-              <option>Paid</option>
-              <option>Pending</option>
-              <option>Failed</option>
-              <option>Refunded</option>
+            <select 
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">All Payment Status</option>
+              <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="failed">Failed</option>
+              <option value="refunded">Refunded</option>
             </select>
-            <select className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-              <option>All Shipping Status</option>
-              <option>Processing</option>
-              <option>Shipped</option>
-              <option>Delivered</option>
-              <option>Cancelled</option>
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">All Shipping Status</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
             </select>
             <button className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,90 +168,88 @@ const Orders = () => {
 
           {/* Orders Table */}
           <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-6 py-3 text-left">
-                      <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Order ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Items</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Payment</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Shipping</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-6 py-4">
-                        <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">{order.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{order.customer}</p>
-                          <p className="text-xs text-muted-foreground">{order.email}</p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{order.total}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{order.items} items</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          order.payment === "Paid" ? "bg-success/10 text-success" :
-                          order.payment === "Pending" ? "bg-warning/10 text-warning" :
-                          order.payment === "Failed" ? "bg-destructive/10 text-destructive" :
-                          "bg-muted text-muted-foreground"
-                        }`}>
-                          {order.payment}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          order.shipping === "Delivered" ? "bg-success/10 text-success" :
-                          order.shipping === "Shipped" ? "bg-info/10 text-info" :
-                          order.shipping === "Processing" ? "bg-warning/10 text-warning" :
-                          order.shipping === "Cancelled" || order.shipping === "Returned" ? "bg-destructive/10 text-destructive" :
-                          "bg-muted text-muted-foreground"
-                        }`}>
-                          {order.shipping}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{order.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <Link to={`/admin/orders/${order.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                          View Details
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-border px-6 py-4">
-              <p className="text-sm text-muted-foreground">
-                Showing <span className="font-medium text-foreground">1</span> to <span className="font-medium text-foreground">8</span> of <span className="font-medium text-foreground">156</span> orders
-              </p>
-              <div className="flex items-center gap-2">
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50" disabled>
-                  Previous
-                </button>
-                <button className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">1</button>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">2</button>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">3</button>
-                <span className="text-muted-foreground">...</span>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">20</button>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                  Next
-                </button>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                <p className="ml-3 text-muted-foreground">Loading orders...</p>
               </div>
-            </div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <svg className="h-16 w-16 text-muted-foreground mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-foreground font-medium mb-1">No orders found</p>
+                <p className="text-sm text-muted-foreground">
+                  {searchQuery || paymentFilter !== "all" || statusFilter !== "all" 
+                    ? "Try adjusting your filters" 
+                    : "Orders will appear here once customers place them"}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="px-6 py-3 text-left">
+                          <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Order ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Items</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Payment</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {filteredOrders.map((order) => (
+                        <tr key={order.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="px-6 py-4">
+                            <input type="checkbox" className="rounded border-border text-primary focus:ring-primary" />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                            #{order.id.slice(-8).toUpperCase()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
+                            NPR {order.total.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                            {order.item_count} {order.item_count === 1 ? 'item' : 'items'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getPaymentStatusColor(order.payment_status)}`}>
+                              {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.status)}`}>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                            {formatDate(order.created_at)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <Link to={`/admin/orders/${order.id}`} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                              View Details
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between border-t border-border px-6 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing <span className="font-medium text-foreground">{filteredOrders.length}</span> of <span className="font-medium text-foreground">{orders.length}</span> order{orders.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </main>
       </div>
