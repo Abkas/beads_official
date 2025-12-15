@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import NavItems from "../ui/NavItems";
 import { getProductById, createProduct, updateProductDetails, updateProductPrice, updateProductStock, changeProductAvailability, getAllCategories } from "../../../api/admin/productApi";
+import { getActiveOffers } from "../../../api/admin/offerApi";
 
 const ProductForm = () => {
   const { id } = useParams();
@@ -11,6 +12,7 @@ const ProductForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [availableOffers, setAvailableOffers] = useState([]);
   const [imageUrls, setImageUrls] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -22,10 +24,12 @@ const ProductForm = () => {
     stock_quantity: "",
     is_available: true,
     is_active: true,
+    offers: [],
   });
 
   useEffect(() => {
     fetchCategories();
+    fetchOffers();
     if (isEdit && id) {
       fetchProduct();
     }
@@ -38,6 +42,16 @@ const ProductForm = () => {
     } catch (error) {
       console.error("Error fetching categories:", error);
       toast.error("Failed to load categories");
+    }
+  };
+
+  const fetchOffers = async () => {
+    try {
+      const data = await getActiveOffers();
+      setAvailableOffers(data);
+    } catch (error) {
+      console.error("Error fetching offers:", error);
+      toast.error("Failed to load offers");
     }
   };
 
@@ -55,6 +69,7 @@ const ProductForm = () => {
         stock_quantity: data.stock_quantity || "",
         is_available: data.is_available ?? true,
         is_active: data.is_active ?? true,
+        offers: data.offers || [],
       });
       setImageUrls(data.image_urls || []);
     } catch (error) {
@@ -73,6 +88,20 @@ const ProductForm = () => {
     }));
   };
 
+  const handleOfferToggle = (offerName) => {
+    setFormData(prev => {
+      const currentOffers = prev.offers || [];
+      const isSelected = currentOffers.includes(offerName);
+      
+      return {
+        ...prev,
+        offers: isSelected
+          ? currentOffers.filter(o => o !== offerName)
+          : [...currentOffers, offerName]
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -80,14 +109,15 @@ const ProductForm = () => {
       setLoading(true);
 
       if (isEdit) {        
-        // Update product details (name, description, category, is_active)
+        // Update product details (name, description, category, is_active, offers)
         const detailsData = {
           name: formData.name,
           description: formData.description,
           category: formData.category,
           is_active: formData.is_active,
           tags: [],
-          image_urls: imageUrls
+          image_urls: imageUrls,
+          offers: formData.offers
         };
         await updateProductDetails(id, detailsData);
 
@@ -122,6 +152,7 @@ const ProductForm = () => {
           is_available: formData.is_available,
           tags: [],
           image_urls: imageUrls,
+          offers: formData.offers
         };
         await createProduct(productData);
         toast.success("Product created successfully!");
@@ -324,6 +355,76 @@ const ProductForm = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <p className="text-sm text-muted-foreground">No images uploaded yet</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Offers */}
+                <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+                  <h2 className="text-lg font-semibold text-foreground mb-4">Active Offers</h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Select which promotional offers apply to this product. The best discount will be automatically calculated.
+                  </p>
+                  
+                  {availableOffers.length > 0 ? (
+                    <div className="space-y-2">
+                      {availableOffers.map((offer) => (
+                        <label 
+                          key={offer.id} 
+                          className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/30 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.offers?.includes(offer.name) || false}
+                            onChange={() => handleOfferToggle(offer.name)}
+                            className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-primary focus:ring-offset-0"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              {offer.icon && <span className="text-base">{offer.icon}</span>}
+                              <span className="font-medium text-foreground">{offer.name}</span>
+                              <span className={`px-2 py-0.5 rounded text-xs font-medium ${offer.color || 'bg-primary/10 text-primary'}`}>
+                                {offer.discount_type === 'percentage' 
+                                  ? `${offer.discount_value}% OFF` 
+                                  : `NPR ${offer.discount_value} OFF`}
+                              </span>
+                            </div>
+                            {offer.bonus_text && (
+                              <p className="text-xs text-muted-foreground">{offer.bonus_text}</p>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 border border-dashed border-border rounded-lg bg-muted/20">
+                      <p className="text-sm text-muted-foreground">No active offers available</p>
+                      <p className="text-xs text-muted-foreground mt-1">Create offers in the Settings page</p>
+                    </div>
+                  )}
+                  
+                  {formData.offers?.length > 0 && (
+                    <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs font-medium text-foreground mb-1">Selected Offers:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {formData.offers.map((offerName) => (
+                          <span 
+                            key={offerName} 
+                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded text-xs font-medium"
+                          >
+                            {offerName}
+                            <button
+                              type="button"
+                              onClick={() => handleOfferToggle(offerName)}
+                              className="hover:bg-primary/20 rounded-full p-0.5"
+                            >
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

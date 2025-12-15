@@ -3,6 +3,58 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from app.services.product.category_service import collection as category_collection
 
+db = client['beads_db']
+offers_collection = db['offers']
+
+def calculate_best_discount(original_price, offers_list, manual_discount_amount=None):
+    """
+    Calculate the best discount from manual discount and active offers
+    Returns: (final_price, best_discount_amount, applied_offer_name)
+    """
+    if not original_price or original_price <= 0:
+        return original_price, None, None
+    
+    best_price = original_price
+    best_discount_amount = None
+    best_offer_name = None
+    
+    # Check manual discount first
+    if manual_discount_amount and manual_discount_amount > 0:
+        manual_price = original_price - manual_discount_amount
+        if manual_price < best_price:
+            best_price = manual_price
+            best_discount_amount = manual_discount_amount
+    
+    # Check all offers
+    if offers_list:
+        # Fetch active offers from database
+        active_offers = list(offers_collection.find({
+            'name': {'$in': offers_list},
+            'is_active': True
+        }).sort('priority', -1))
+        
+        for offer in active_offers:
+            discount_type = offer.get('discount_type', 'percentage')
+            discount_value = offer.get('discount_value', 0)
+            
+            if discount_type == 'percentage':
+                offer_discount = original_price * (discount_value / 100)
+                offer_price = original_price - offer_discount
+            else:  # fixed
+                offer_discount = discount_value
+                offer_price = original_price - offer_discount
+            
+            # Keep best (lowest price)
+            if offer_price < best_price:
+                best_price = offer_price
+                best_discount_amount = offer_discount
+                best_offer_name = offer.get('name')
+    
+    # Ensure price doesn't go negative
+    best_price = max(0, best_price)
+    
+    return round(best_price, 2), best_discount_amount, best_offer_name
+
 def get_all_products(category=None, search=None, min_price=None, max_price=None, is_available=True, skip=0, limit=50):
     query = {}
     if category:
@@ -24,21 +76,33 @@ def get_all_products(category=None, search=None, min_price=None, max_price=None,
     products = list(db["products"].find(query).skip(skip).limit(limit))
     product_list = []
     for product in products:
+        # Calculate dynamic pricing with offers
+        original_price = product.get("original_price", product.get("price", 0.0))
+        manual_discount = product.get("discount_price")
+        offers = product.get("offers", [])
+        
+        # Calculate best price considering manual discount and offers
+        final_price, applied_discount, applied_offer = calculate_best_discount(
+            original_price, offers, manual_discount
+        )
+        
         product_response = {
             "id": str(product.get("_id")),
             "name": product.get("name", ""),
             "description": product.get("description", ""),
             "image_urls": product.get("image_urls", []),
-            "original_price": product.get("original_price", product.get("price", 0.0)),
-            "price": product.get("price", 0.0),
+            "original_price": original_price,
+            "price": final_price,
             "discount_price": product.get("discount_price", None),
+            "applied_discount": applied_discount,
+            "applied_offer": applied_offer,
             "currency": product.get("currency", "NPR"),
             "stock_quantity": product.get("stock_quantity", 0),
             "is_available": product.get("is_available", True),
             "category": product.get("category", ""),
             "subcategory": product.get("subcategory", None),
             "tags": product.get("tags", []),
-            "offers": product.get("offers", []),
+            "offers": offers,
             "ratings": product.get("ratings", 0.0),
             "review_count": product.get("review_count", 0),
             "created_at": product.get("created_at", None),
@@ -50,21 +114,33 @@ def get_all_products(category=None, search=None, min_price=None, max_price=None,
 def get_product_by_id(product_id):
     product = db["products"].find_one({"_id": ObjectId(product_id)})
     if product:
+        # Calculate dynamic pricing with offers
+        original_price = product.get("original_price", product.get("price", 0.0))
+        manual_discount = product.get("discount_price")
+        offers = product.get("offers", [])
+        
+        # Calculate best price considering manual discount and offers
+        final_price, applied_discount, applied_offer = calculate_best_discount(
+            original_price, offers, manual_discount
+        )
+        
         product_response = {
             "id": str(product.get("_id")),
             "name": product.get("name", ""),
             "description": product.get("description", ""),
             "image_urls": product.get("image_urls", []),
-            "original_price": product.get("original_price", product.get("price", 0.0)),
-            "price": product.get("price", 0.0),
+            "original_price": original_price,
+            "price": final_price,
             "discount_price": product.get("discount_price", None),
+            "applied_discount": applied_discount,
+            "applied_offer": applied_offer,
             "currency": product.get("currency", "NPR"),
             "stock_quantity": product.get("stock_quantity", 0),
             "is_available": product.get("is_available", True),
             "category": product.get("category", ""),
             "subcategory": product.get("subcategory", None),
             "tags": product.get("tags", []),
-            "offers": product.get("offers", []),
+            "offers": offers,
             "ratings": product.get("ratings", 0.0),
             "review_count": product.get("review_count", 0),
             "created_at": product.get("created_at", None),

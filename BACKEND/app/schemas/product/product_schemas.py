@@ -48,6 +48,8 @@ class ProductResponse(BaseModel):
     original_price: float
     price : float
     discount_price: Optional[float]
+    applied_discount: Optional[float] = None
+    applied_offer: Optional[str] = None
     currency: str
 
     stock_quantity : int
