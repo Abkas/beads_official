@@ -18,6 +18,7 @@ const Settings = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [showAddOffer, setShowAddOffer] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ show: false, type: null, id: null, name: null });
 
   // Fetch admin data
   useEffect(() => {
@@ -91,11 +92,10 @@ const Settings = () => {
   };
 
   const handleDeleteCategory = async (categoryId) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
-
     try {
       await deleteCategory(categoryId);
       setCategories(categories.filter(cat => cat.id !== categoryId));
+      setDeleteModal({ show: false, type: null, id: null, name: null });
       toast.success("Category deleted successfully");
     } catch (error) {
       toast.error(error.message || "Failed to delete category");
@@ -103,14 +103,21 @@ const Settings = () => {
   };
 
   const handleDeleteOffer = async (offerId) => {
-    if (!confirm("Are you sure you want to delete this offer?")) return;
-
     try {
       await deleteOffer(offerId);
       setOffers(offers.filter(offer => offer.id !== offerId));
+      setDeleteModal({ show: false, type: null, id: null, name: null });
       toast.success("Offer deleted successfully");
     } catch (error) {
       toast.error(error.response?.data?.detail || "Failed to delete offer");
+    }
+  };
+
+  const confirmDelete = () => {
+    if (deleteModal.type === 'category') {
+      handleDeleteCategory(deleteModal.id);
+    } else if (deleteModal.type === 'offer') {
+      handleDeleteOffer(deleteModal.id);
     }
   };
 
@@ -388,7 +395,7 @@ const Settings = () => {
                           </svg>
                         </button>
                         <button 
-                          onClick={() => handleDeleteCategory(category.id)}
+                          onClick={() => setDeleteModal({ show: true, type: 'category', id: category.id, name: category.name })}
                           className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                         >
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -475,7 +482,7 @@ const Settings = () => {
                           </svg>
                         </button>
                         <button 
-                          onClick={() => handleDeleteOffer(offer.id)}
+                          onClick={() => setDeleteModal({ show: true, type: 'offer', id: offer.id, name: offer.name })}
                           className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                         >
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -493,6 +500,61 @@ const Settings = () => {
           </div>
         </main>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="flex items-center gap-3 p-6 border-b border-border">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                <svg className="h-6 w-6 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Delete {deleteModal.type === 'category' ? 'Category' : 'Offer'}?
+                </h3>
+                <p className="text-sm text-muted-foreground">This action cannot be undone</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <p className="text-sm text-foreground mb-2">
+                Are you sure you want to delete <span className="font-semibold">"{deleteModal.name}"</span>?
+              </p>
+              {deleteModal.type === 'category' && (
+                <p className="text-xs text-muted-foreground">
+                  Products in this category will need to be reassigned.
+                </p>
+              )}
+              {deleteModal.type === 'offer' && (
+                <p className="text-xs text-muted-foreground">
+                  This offer will be removed from all products.
+                </p>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 p-6 border-t border-border">
+              <button
+                onClick={() => setDeleteModal({ show: false, type: null, id: null, name: null })}
+                className="flex-1 px-4 py-2.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground font-medium transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
