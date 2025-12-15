@@ -50,7 +50,7 @@ const ProductForm = () => {
         description: data.description || "",
         category: data.category || "",
         subcategory: data.subcategory || "",
-        price: data.price || "",
+        price: data.original_price || "",
         discount_price: data.discount_price || "",
         stock_quantity: data.stock_quantity || "",
         is_available: data.is_available ?? true,
@@ -333,7 +333,7 @@ const ProductForm = () => {
                   <h2 className="text-lg font-semibold text-foreground mb-4">Pricing</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5">Price</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Original Price</label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">NPR</span>
                         <input

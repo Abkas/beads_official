@@ -29,13 +29,16 @@ def get_all_products(category=None, search=None, min_price=None, max_price=None,
             "name": product.get("name", ""),
             "description": product.get("description", ""),
             "image_urls": product.get("image_urls", []),
+            "original_price": product.get("original_price", product.get("price", 0.0)),
             "price": product.get("price", 0.0),
-            "discount_price": product.get("discount_price", 0.0),
+            "discount_price": product.get("discount_price", None),
             "currency": product.get("currency", "NPR"),
             "stock_quantity": product.get("stock_quantity", 0),
             "is_available": product.get("is_available", True),
             "category": product.get("category", ""),
             "subcategory": product.get("subcategory", None),
+            "tags": product.get("tags", []),
+            "offers": product.get("offers", []),
             "ratings": product.get("ratings", 0.0),
             "review_count": product.get("review_count", 0),
             "created_at": product.get("created_at", None),
@@ -52,13 +55,16 @@ def get_product_by_id(product_id):
             "name": product.get("name", ""),
             "description": product.get("description", ""),
             "image_urls": product.get("image_urls", []),
+            "original_price": product.get("original_price", product.get("price", 0.0)),
             "price": product.get("price", 0.0),
-            "discount_price": product.get("discount_price", 0.0),
+            "discount_price": product.get("discount_price", None),
             "currency": product.get("currency", "NPR"),
             "stock_quantity": product.get("stock_quantity", 0),
             "is_available": product.get("is_available", True),
             "category": product.get("category", ""),
             "subcategory": product.get("subcategory", None),
+            "tags": product.get("tags", []),
+            "offers": product.get("offers", []),
             "ratings": product.get("ratings", 0.0),
             "review_count": product.get("review_count", 0),
             "created_at": product.get("created_at", None),
@@ -73,6 +79,20 @@ def create_product(product_data):
     product_dict["is_active"] = product_dict.get("is_active", True)
     product_dict["ratings"] = product_dict.get("ratings", 0.0)
     product_dict["review_count"] = product_dict.get("review_count", 0)
+    
+    # Set original_price from price field (this is the fixed base price)
+    original_price = product_dict.get("price", 0.0)
+    product_dict["original_price"] = original_price
+    
+    # Calculate final price: original_price - discount_price
+    discount_price = product_dict.get("discount_price")
+    if discount_price is not None and discount_price > 0 and discount_price < original_price:
+        # Apply discount: final price = original - discount amount
+        product_dict["price"] = original_price - discount_price
+    else:
+        # No discount or invalid discount
+        product_dict["price"] = original_price
+        product_dict["discount_price"] = None
 
     # Validate category name exists
     category_doc = category_collection.find_one({"name": product_dict["category"]})
@@ -92,11 +112,41 @@ def update_product(product_id, product_update):
     return None
 
 def update_product_price(product_id, price_update):
-    update_data = {"price": price_update.price}
+    # Get current product to access original_price
+    product = db["products"].find_one({"_id": ObjectId(product_id)})
+    if not product:
+        return None
+    
+    update_data = {}
+    
+    # Get the original price (never changes unless explicitly updated)
+    original_price = product.get("original_price", product.get("price", 0.0))
+    
+    # Only update original_price if explicitly provided AND it's different
+    if price_update.price is not None and price_update.price != original_price:
+        update_data["original_price"] = price_update.price
+        original_price = price_update.price
+        # When original price changes, recalculate based on current discount
+        current_discount = product.get("discount_price")
+        if current_discount and current_discount > 0 and current_discount < original_price:
+            update_data["price"] = original_price - current_discount
+            update_data["discount_price"] = current_discount
+        else:
+            update_data["price"] = original_price
+            update_data["discount_price"] = None
+    
     if price_update.currency:
         update_data["currency"] = price_update.currency
+    
+    # Handle discount_price update: calculate final price = original - discount
     if price_update.discount_price is not None:
-        update_data["discount_price"] = price_update.discount_price
+        if price_update.discount_price > 0 and price_update.discount_price < original_price:
+            update_data["discount_price"] = price_update.discount_price
+            update_data["price"] = original_price - price_update.discount_price
+        else:
+            # Remove discount
+            update_data["discount_price"] = None
+            update_data["price"] = original_price
     
     result = db["products"].update_one(
         {"_id": ObjectId(product_id)},

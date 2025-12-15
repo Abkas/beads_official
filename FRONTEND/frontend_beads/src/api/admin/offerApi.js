@@ -1,4 +1,4 @@
-import axiosInstance from "../axiosInstance";
+import { axiosInstance } from "../../lib/axios";
 
 const API_URL = "/offers";
 
@@ -18,7 +18,10 @@ export const getOfferById = async (id) => {
 };
 
 export const createOffer = async (offerData) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    throw new Error("Not authenticated. Please log in again.");
+  }
   const response = await axiosInstance.post(API_URL, offerData, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -28,7 +31,7 @@ export const createOffer = async (offerData) => {
 };
 
 export const updateOffer = async (id, offerData) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   const response = await axiosInstance.put(`${API_URL}/${id}`, offerData, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -38,7 +41,7 @@ export const updateOffer = async (id, offerData) => {
 };
 
 export const toggleOfferActive = async (id) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   const response = await axiosInstance.patch(`${API_URL}/${id}/toggle-active`, {}, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -48,7 +51,7 @@ export const toggleOfferActive = async (id) => {
 };
 
 export const deleteOffer = async (id) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   await axiosInstance.delete(`${API_URL}/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,

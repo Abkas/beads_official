@@ -5,6 +5,7 @@ import { verifyToken } from "../../../api/UserApi";
 import { getAllCategories, deleteCategory } from "../../../api/admin/categoryApi";
 import { getAllOffers, deleteOffer } from "../../../api/admin/offerApi";
 import CategoryForm from "../components/CategoryForm";
+import OfferForm from "../components/OfferForm";
 import toast from "react-hot-toast";
 
 const Settings = () => {
@@ -16,6 +17,7 @@ const Settings = () => {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [showAddOffer, setShowAddOffer] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null);
 
   // Fetch admin data
   useEffect(() => {
@@ -110,6 +112,23 @@ const Settings = () => {
     } catch (error) {
       toast.error(error.response?.data?.detail || "Failed to delete offer");
     }
+  };
+
+  const handleOfferAdded = (newOffer) => {
+    setOffers([...offers, newOffer]);
+    setShowAddOffer(false);
+  };
+
+  const handleOfferUpdated = (updatedOffer) => {
+    setOffers(offers.map(offer => 
+      offer.id === updatedOffer.id ? { ...updatedOffer, id: updatedOffer.id || updatedOffer._id } : offer
+    ));
+    setEditingOffer(null);
+  };
+
+  const handleEditOffer = (offer) => {
+    setEditingOffer(offer);
+    setShowAddOffer(false);
   };
 
   return (
@@ -390,12 +409,31 @@ const Settings = () => {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-foreground">Offers & Promotions</h2>
                 <button 
-                  onClick={() => setShowAddOffer(!showAddOffer)}
+                  onClick={() => {
+                    setShowAddOffer(!showAddOffer);
+                    setEditingOffer(null);
+                  }}
                   className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   Add Offer
                 </button>
               </div>
+
+              {showAddOffer && (
+                <OfferForm 
+                  onOfferAdded={handleOfferAdded}
+                  onCancel={() => setShowAddOffer(false)}
+                />
+              )}
+
+              {editingOffer && (
+                <OfferForm 
+                  editOffer={editingOffer}
+                  onOfferAdded={handleOfferUpdated}
+                  onCancel={() => setEditingOffer(null)}
+                />
+              )}
+
               <div className="space-y-3">
                 {offers.length > 0 ? (
                   offers.map((offer) => (
@@ -428,7 +466,10 @@ const Settings = () => {
                         <span className={`px-2 py-0.5 rounded text-xs ${offer.is_active ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
                           {offer.is_active ? 'Active' : 'Inactive'}
                         </span>
-                        <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+                        <button 
+                          onClick={() => handleEditOffer(offer)}
+                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        >
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>

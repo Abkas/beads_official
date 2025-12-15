@@ -56,15 +56,21 @@ const ProductCard = ({ product, onViewDetail, onAddToCart, onAddToWishlist }) =>
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xl font-bold" style={{ color: 'var(--primary)' }}>
-            NPR {product.price}
-          </span>
-          {product.discount_price && product.discount_price < product.price && (
-            <span 
-              className="text-sm line-through"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              NPR {product.discount_price}
+          {product.discount_price && product.discount_price > 0 && product.discount_price < product.original_price ? (
+            <>
+              <span className="text-xl font-bold" style={{ color: 'var(--primary)' }}>
+                NPR {product.price}
+              </span>
+              <span 
+                className="text-sm line-through"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                NPR {product.original_price}
+              </span>
+            </>
+          ) : (
+            <span className="text-xl font-bold" style={{ color: 'var(--primary)' }}>
+              NPR {product.price}
             </span>
           )}
         </div>

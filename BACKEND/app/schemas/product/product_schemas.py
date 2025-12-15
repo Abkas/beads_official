@@ -45,6 +45,7 @@ class ProductResponse(BaseModel):
     description: str
     image_urls : List[str]
 
+    original_price: float
     price : float
     discount_price: Optional[float]
     currency: str
