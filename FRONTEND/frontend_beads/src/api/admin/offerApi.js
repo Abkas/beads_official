@@ -31,7 +31,13 @@ export const createOffer = async (offerData) => {
 };
 
 export const updateOffer = async (id, offerData) => {
+  if (!id) {
+    throw new Error("Offer ID is required for update");
+  }
   const token = localStorage.getItem("access_token");
+  if (!token) {
+    throw new Error("Not authenticated. Please log in again.");
+  }
   const response = await axiosInstance.put(`${API_URL}/${id}`, offerData, {
     headers: {
       Authorization: `Bearer ${token}`,

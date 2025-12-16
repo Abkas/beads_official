@@ -20,6 +20,8 @@ import SignUpPage from "./pages/sub_pages/SignUpPage";
 import AdminDashboard from "./pages/admin/pages/AdminDashboard";
 import Settings from "./pages/admin/pages/Settings";
 import Product from "./pages/admin/pages/Product";
+import Categories from "./pages/admin/pages/Categories";
+import Promotions from "./pages/admin/pages/Promotions";
 import Customer from "./pages/admin/pages/Customer";
 import CustomerProfile from "./pages/admin/components/CustomerProfile";
 import Orders from "./pages/admin/pages/Orders";
@@ -72,6 +74,8 @@ function App() {
         <Route path="/admin/products" element={<AdminRoute><Product /></AdminRoute>} />
         <Route path="/admin/products/add" element={<AdminRoute><ProductForm /></AdminRoute>} />
         <Route path="/admin/products/edit/:id" element={<AdminRoute><ProductForm /></AdminRoute>} />
+        <Route path="/admin/categories" element={<AdminRoute><Categories /></AdminRoute>} />
+        <Route path="/admin/promotions" element={<AdminRoute><Promotions /></AdminRoute>} />
         <Route path="/admin/customers" element={<AdminRoute><Customer /></AdminRoute>} />
         <Route path="/admin/customers/:id" element={<AdminRoute><CustomerProfile /></AdminRoute>} />
         <Route path="/admin/orders" element={<AdminRoute><Orders /></AdminRoute>} />

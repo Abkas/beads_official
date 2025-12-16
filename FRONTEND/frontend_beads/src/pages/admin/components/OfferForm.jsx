@@ -112,8 +112,9 @@ export default function OfferForm({ editOffer = null, onOfferAdded, onCancel }) 
       };
 
       let result;
-      if (editOffer) {
-        result = await updateOffer(editOffer.id, offerData);
+      if (editOffer && (editOffer.id || editOffer._id)) {
+        const offerId = editOffer.id || editOffer._id;
+        result = await updateOffer(offerId, offerData);
         toast.success("Offer updated successfully");
       } else {
         result = await createOffer(offerData);

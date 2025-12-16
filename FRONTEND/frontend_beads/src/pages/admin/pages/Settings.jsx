@@ -1,24 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import NavItems from "../ui/NavItems";
 import { verifyToken } from "../../../api/UserApi";
-import { getAllCategories, deleteCategory } from "../../../api/admin/categoryApi";
-import { getAllOffers, deleteOffer } from "../../../api/admin/offerApi";
-import CategoryForm from "../components/CategoryForm";
-import OfferForm from "../components/OfferForm";
-import toast from "react-hot-toast";
 
 const Settings = () => {
-  const navigate = useNavigate();
   const [adminData, setAdminData] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [offers, setOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddCategory, setShowAddCategory] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [showAddOffer, setShowAddOffer] = useState(false);
-  const [editingOffer, setEditingOffer] = useState(null);
-  const [deleteModal, setDeleteModal] = useState({ show: false, type: null, id: null, name: null });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch admin data
   useEffect(() => {
@@ -35,113 +21,20 @@ const Settings = () => {
     fetchAdminData();
   }, []);
 
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getAllCategories();
-        // Normalize the data to use 'id' instead of '_id'
-        const normalizedData = data.map(cat => ({
-          ...cat,
-          id: cat.id || cat._id
-        }));
-        setCategories(normalizedData);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("Failed to load categories");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // Fetch offers
-  useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        const data = await getAllOffers();
-        const normalizedData = data.map(offer => ({
-          ...offer,
-          id: offer.id || offer._id
-        }));
-        setOffers(normalizedData);
-      } catch (error) {
-        console.error("Error fetching offers:", error);
-        toast.error("Failed to load offers");
-      }
-    };
-    fetchOffers();
-  }, []);
-
-  const handleCategoryAdded = (newCategory) => {
-    setCategories([...categories, newCategory]);
-    setShowAddCategory(false);
-  };
-
-  const handleCategoryUpdated = (updatedCategory) => {
-    setCategories(categories.map(cat => 
-      cat.id === updatedCategory.id ? { ...updatedCategory, id: updatedCategory.id || updatedCategory._id } : cat
-    ));
-    setEditingCategory(null);
-  };
-
-  const handleEditCategory = (category) => {
-    setEditingCategory(category);
-    setShowAddCategory(false);
-  };
-
-  const handleDeleteCategory = async (categoryId) => {
-    try {
-      await deleteCategory(categoryId);
-      setCategories(categories.filter(cat => cat.id !== categoryId));
-      setDeleteModal({ show: false, type: null, id: null, name: null });
-      toast.success("Category deleted successfully");
-    } catch (error) {
-      toast.error(error.message || "Failed to delete category");
-    }
-  };
-
-  const handleDeleteOffer = async (offerId) => {
-    try {
-      await deleteOffer(offerId);
-      setOffers(offers.filter(offer => offer.id !== offerId));
-      setDeleteModal({ show: false, type: null, id: null, name: null });
-      toast.success("Offer deleted successfully");
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to delete offer");
-    }
-  };
-
-  const confirmDelete = () => {
-    if (deleteModal.type === 'category') {
-      handleDeleteCategory(deleteModal.id);
-    } else if (deleteModal.type === 'offer') {
-      handleDeleteOffer(deleteModal.id);
-    }
-  };
-
-  const handleOfferAdded = (newOffer) => {
-    setOffers([...offers, newOffer]);
-    setShowAddOffer(false);
-  };
-
-  const handleOfferUpdated = (updatedOffer) => {
-    setOffers(offers.map(offer => 
-      offer.id === updatedOffer.id ? { ...updatedOffer, id: updatedOffer.id || updatedOffer._id } : offer
-    ));
-    setEditingOffer(null);
-  };
-
-  const handleEditOffer = (offer) => {
-    setEditingOffer(offer);
-    setShowAddOffer(false);
-  };
-
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
+      <aside className={`fixed left-0 top-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border transition-transform lg:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <svg className="h-5 w-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,10 +47,18 @@ const Settings = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 lg:ml-64">
         {/* Top Navbar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors lg:hidden"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
             <h1 className="text-lg font-semibold text-foreground">Settings</h1>
           </div>
           <div className="flex items-center gap-4">
@@ -188,7 +89,7 @@ const Settings = () => {
         </header>
 
         {/* Settings Content */}
-        <main className="p-6 animate-fade-in">
+        <main className="p-4 sm:p-6 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Admin Profile */}
             <div className="rounded-xl border border-border bg-card p-6 shadow-card">
@@ -317,244 +218,9 @@ const Settings = () => {
                 </div>
               </div>
             </div>
-
-            {/* Categories */}
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-foreground">Categories</h2>
-                <button 
-                  onClick={() => {
-                    setShowAddCategory(!showAddCategory);
-                    setEditingCategory(null);
-                  }}
-                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  Add Category
-                </button>
-              </div>
-
-              {showAddCategory && (
-                <CategoryForm 
-                  categories={categories}
-                  onCategoryAdded={handleCategoryAdded}
-                  onCancel={() => setShowAddCategory(false)}
-                />
-              )}
-
-              {editingCategory && (
-                <CategoryForm 
-                  categories={categories}
-                  editCategory={editingCategory}
-                  onCategoryAdded={handleCategoryUpdated}
-                  onCancel={() => setEditingCategory(null)}
-                />
-              )}
-
-              <div className="space-y-3 mt-6">
-                {loading ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading categories...</div>
-                ) : categories.length > 0 ? (
-                  categories.map((category) => (
-                    <div key={category.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                          {category.image_url ? (
-                            <img 
-                              src={category.image_url} 
-                              alt={category.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <svg className="h-5 w-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{category.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {category.product_count || 0} products
-                            {category.product_count > 0 && (
-                              <button
-                                onClick={() => navigate(`/admin/products?category=${category.id}`)}
-                                className="ml-2 text-primary hover:underline"
-                              >
-                                View
-                              </button>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => handleEditCategory(category)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button 
-                          onClick={() => setDeleteModal({ show: true, type: 'category', id: category.id, name: category.name })}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">No categories found</div>
-                )}
-              </div>
-            </div>
-
-            {/* Offers/Promotions */}
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-foreground">Offers & Promotions</h2>
-                <button 
-                  onClick={() => {
-                    setShowAddOffer(!showAddOffer);
-                    setEditingOffer(null);
-                  }}
-                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  Add Offer
-                </button>
-              </div>
-
-              {showAddOffer && (
-                <OfferForm 
-                  onOfferAdded={handleOfferAdded}
-                  onCancel={() => setShowAddOffer(false)}
-                />
-              )}
-
-              {editingOffer && (
-                <OfferForm 
-                  editOffer={editingOffer}
-                  onOfferAdded={handleOfferUpdated}
-                  onCancel={() => setEditingOffer(null)}
-                />
-              )}
-
-              <div className="space-y-3">
-                {offers.length > 0 ? (
-                  offers.map((offer) => (
-                    <div key={offer.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`h-3 w-3 rounded-full ${offer.color}`}></div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-foreground">{offer.name}</p>
-                            {offer.icon && <span className="text-sm">{offer.icon}</span>}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {offer.discount_type === 'percentage' ? `${offer.discount_value}% off` : `$${offer.discount_value} off`}
-                            {offer.bonus_text && ` • ${offer.bonus_text}`}
-                            {offer.product_count > 0 && (
-                              <>
-                                {` • ${offer.product_count} products`}
-                                <button
-                                  onClick={() => navigate(`/admin/products?offer=${offer.id}`)}
-                                  className="ml-2 text-primary hover:underline"
-                                >
-                                  View
-                                </button>
-                              </>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-xs ${offer.is_active ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                          {offer.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                        <button 
-                          onClick={() => handleEditOffer(offer)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button 
-                          onClick={() => setDeleteModal({ show: true, type: 'offer', id: offer.id, name: offer.name })}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">No offers found</div>
-                )}
-              </div>
-            </div>
           </div>
         </main>
       </div>
-
-      {/* Delete Confirmation Modal */}
-      {deleteModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
-            {/* Header */}
-            <div className="flex items-center gap-3 p-6 border-b border-border">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                <svg className="h-6 w-6 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Delete {deleteModal.type === 'category' ? 'Category' : 'Offer'}?
-                </h3>
-                <p className="text-sm text-muted-foreground">This action cannot be undone</p>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              <p className="text-sm text-foreground mb-2">
-                Are you sure you want to delete <span className="font-semibold">"{deleteModal.name}"</span>?
-              </p>
-              {deleteModal.type === 'category' && (
-                <p className="text-xs text-muted-foreground">
-                  Products in this category will need to be reassigned.
-                </p>
-              )}
-              {deleteModal.type === 'offer' && (
-                <p className="text-xs text-muted-foreground">
-                  This offer will be removed from all products.
-                </p>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 p-6 border-t border-border">
-              <button
-                onClick={() => setDeleteModal({ show: false, type: null, id: null, name: null })}
-                className="flex-1 px-4 py-2.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground font-medium transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
