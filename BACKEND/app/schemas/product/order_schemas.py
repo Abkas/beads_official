@@ -41,10 +41,12 @@ class OrderPaymentUpdate(BaseModel):
     )
 class OrderListItem(BaseModel):
     id: str
+    user_id: str
     total: float
-
+    
     status: str
     payment_status: str
-
+    payment_method: str
+    shipping_address: dict
     created_at: datetime
     item_count: int = Field(description="How many different products in order")

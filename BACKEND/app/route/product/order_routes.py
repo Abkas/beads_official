@@ -92,4 +92,15 @@ def update_payment_status_route(
     return order
 
 
+@router.get('/stats/payments')
+async def get_payment_stats(
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get payment statistics for admin dashboard"""
+    from app.services.product.order_service import get_payment_statistics
+    stats = get_payment_statistics()
+    return stats
+
+
+
 

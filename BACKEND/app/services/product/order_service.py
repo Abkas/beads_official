@@ -128,9 +128,12 @@ def get_user_orders(user_id):
 	for order in orders:
 		order_item = {
 			"id": str(order.get("_id")),
+			"user_id": order.get("user_id", ""),
 			"total": order.get("total", 0.0),
 			"status": order.get("status", "pending"),
 			"payment_status": order.get("payment_status", "unpaid"),
+			"payment_method": order.get("payment_method", "cod"),
+			"shipping_address": order.get("shipping_address", {}),
 			"created_at": order.get("created_at"),
 			"item_count": len(order.get("items", []))
 		}
@@ -232,9 +235,12 @@ def get_all_orders(status_filter=None, limit=50):
 	for order in orders:
 		order_item = {
 			"id": str(order.get("_id")),
+			"user_id": order.get("user_id", ""),
 			"total": order.get("total", 0.0),
 			"status": order.get("status", "pending"),
 			"payment_status": order.get("payment_status", "unpaid"),
+			"payment_method": order.get("payment_method", ""),
+			"shipping_address": order.get("shipping_address", {}),
 			"created_at": order.get("created_at"),
 			"item_count": len(order.get("items", []))
 		}
@@ -249,6 +255,29 @@ def update_order_status(order_id, status):
 	if result.modified_count:
 		return get_order_by_id_admin(order_id)
 	return None
+
+def get_payment_statistics():
+	"""Calculate payment statistics for admin dashboard"""
+	orders = list(db["orders"].find())
+	
+	total_revenue = sum(order.get("total", 0) for order in orders)
+	unpaid_orders = [o for o in orders if o.get("payment_status") == "unpaid"]
+	paid_orders = [o for o in orders if o.get("payment_status") == "paid"]
+	failed_orders = [o for o in orders if o.get("payment_status") == "failed"]
+	refunded_orders = [o for o in orders if o.get("payment_status") == "refunded"]
+	
+	return {
+		"total_revenue": total_revenue,
+		"total_orders": len(orders),
+		"unpaid_amount": sum(o.get("total", 0) for o in unpaid_orders),
+		"unpaid_count": len(unpaid_orders),
+		"paid_amount": sum(o.get("total", 0) for o in paid_orders),
+		"paid_count": len(paid_orders),
+		"failed_amount": sum(o.get("total", 0) for o in failed_orders),
+		"failed_count": len(failed_orders),
+		"refunded_amount": sum(o.get("total", 0) for o in refunded_orders),
+		"refunded_count": len(refunded_orders)
+	}
 
 def update_payment_status(order_id, payment_status):
 	result = db["orders"].update_one(
