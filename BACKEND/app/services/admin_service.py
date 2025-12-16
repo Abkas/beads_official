@@ -94,3 +94,42 @@ def get_user_by_id_admin(user_id: str):
         }
     except Exception:
         return None
+
+def get_dashboard_stats():
+    """Get dashboard statistics for admin"""
+    # Total sales from all orders
+    orders = list(db['orders'].find())
+    total_sales = sum(order.get('total', 0) for order in orders)
+    
+    # Total orders count
+    total_orders = len(orders)
+    
+    # Total customers (unique users)
+    total_customers = db['users'].count_documents({})
+    
+    # Pending orders (status = pending)
+    pending_orders = db['orders'].count_documents({'status': 'pending'})
+    
+    # Recent 5 orders
+    recent_orders = list(db['orders'].find().sort('created_at', -1).limit(5))
+    recent_orders_list = []
+    for order in recent_orders:
+        recent_orders_list.append({
+            'id': str(order.get('_id')),
+            'user_id': order.get('user_id', ''),
+            'total': order.get('total', 0.0),
+            'status': order.get('status', 'pending'),
+            'payment_status': order.get('payment_status', 'unpaid'),
+            'payment_method': order.get('payment_method', ''),
+            'shipping_address': order.get('shipping_address', {}),
+            'created_at': order.get('created_at'),
+            'item_count': len(order.get('items', []))
+        })
+    
+    return {
+        'total_sales': total_sales,
+        'total_orders': total_orders,
+        'total_customers': total_customers,
+        'pending_orders': pending_orders,
+        'recent_orders': recent_orders_list
+    }

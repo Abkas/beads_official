@@ -1,27 +1,28 @@
 import { useState, useEffect } from "react";
 import NavItems from "../ui/NavItems";
 import { Link } from "react-router-dom";
-import { getAllOrdersAdmin } from "../../../api/orderApi";
+import { getDashboardStats } from "../../../api/admin/dashboardApi";
 import toast from "react-hot-toast";
 
 const AdminDashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    fetchRecentOrders();
+    fetchDashboardData();
   }, []);
 
-  const fetchRecentOrders = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await getAllOrdersAdmin();
-      // Get only the 5 most recent orders
-      const sortedOrders = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setRecentOrders(sortedOrders.slice(0, 5));
+      const data = await getDashboardStats();
+      
+      setRecentOrders(data.recent_orders || []);
+      setStats(data);
     } catch (error) {
-      console.error("Error fetching orders:", error);
-      toast.error("Failed to load recent orders");
+      console.error("Error fetching dashboard data:", error);
+      toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
@@ -47,12 +48,12 @@ const AdminDashboard = () => {
     return colors[status] || "bg-muted text-muted-foreground";
   };
   
-  // TODO: call GET /api/dashboard/stats
-  const stats = {
-    totalSales: "$124,592.00",
-    totalOrders: 1247,
-    totalCustomers: 892,
-    pendingOrders: 23
+  // Default stats while loading
+  const displayStats = stats || {
+    total_sales: 0,
+    total_orders: 0,
+    total_customers: 0,
+    pending_orders: 0
   };
 
 
@@ -105,12 +106,12 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Sales</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{stats.totalSales}</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">NPR {displayStats.total_sales.toLocaleString()}</p>
                   <p className="text-xs text-success mt-1 flex items-center gap-1">
                     <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                     </svg>
-                    +12.5% from last month
+                    From all orders
                   </p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-3">
@@ -125,12 +126,12 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{stats.totalOrders}</p>
-                  <p className="text-xs text-success mt-1 flex items-center gap-1">
+                  <p className="text-2xl font-bold text-foreground mt-1">{displayStats.total_orders.toLocaleString()}</p>
+                  <p className="text-xs text-info mt-1 flex items-center gap-1">
                     <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    +8.2% from last month
+                    All time
                   </p>
                 </div>
                 <div className="rounded-lg bg-info/10 p-3">
@@ -145,12 +146,12 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Customers</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{stats.totalCustomers}</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{displayStats.total_customers.toLocaleString()}</p>
                   <p className="text-xs text-success mt-1 flex items-center gap-1">
                     <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    +5.1% from last month
+                    Registered users
                   </p>
                 </div>
                 <div className="rounded-lg bg-success/10 p-3">
@@ -165,7 +166,7 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Orders</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{stats.pendingOrders}</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{displayStats.pending_orders.toLocaleString()}</p>
                   <p className="text-xs text-warning mt-1 flex items-center gap-1">
                     <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

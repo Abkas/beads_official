@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.core.security import get_current_user
-from app.services.admin_service import get_all_users, get_user_by_id_admin
+from app.core.security import get_current_user, get_admin_user
+from app.services.admin_service import get_all_users, get_user_by_id_admin, get_dashboard_stats
 
 router = APIRouter(
     prefix='/admin',
     tags=['Admin']
 )
+
+# Get dashboard statistics
+@router.get('/dashboard/stats')
+def get_dashboard_statistics(admin_user: dict = Depends(get_admin_user)):
+    return get_dashboard_stats()
 
 # Get all users (admin only)
 @router.get('/customers')
